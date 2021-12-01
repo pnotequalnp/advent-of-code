@@ -23,9 +23,9 @@ library
     OverloadedStrings
 
   build-depends:
-    , advent-of-code-api
+    , advent-of-code-api    ^>=0.2.8
     , base                  ^>=4.14.1.0
-    , containers
-    , criterion
-    , optparse-applicative
-    , text
+    , containers            ^>=0.6.5
+    , criterion             ^>=1.5.11
+    , optparse-applicative  ^>=0.16.1
+    , text                  ^>=1.2.4
