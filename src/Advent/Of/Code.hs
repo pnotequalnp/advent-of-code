@@ -7,13 +7,14 @@ where
 import Advent
 import Control.Applicative ((<|>))
 import Control.Monad ((<=<))
+import Criterion.Main qualified as C
 import Data.Map ((!))
 import Data.Text (Text)
 import Data.Text qualified as T
 import Data.Text.IO qualified as T
 import Options.Applicative (Parser, ParserInfo)
 import Options.Applicative qualified as O
-import System.Environment (lookupEnv)
+import System.Environment (getArgs, getProgName, lookupEnv, withArgs, withProgName)
 import System.Exit (exitFailure)
 import System.IO (stderr)
 import Text.Read (readMaybe)
@@ -29,34 +30,48 @@ data Action
   | ShowInput
   | ShowOutput
   | ShowPrompt
+  | Benchmark
 
-runAdvent :: Integer -> (Int -> Part -> Text -> Maybe Text) -> IO ()
+runAdvent :: Integer -> (Int -> Part -> Maybe (Text -> Text)) -> IO ()
 runAdvent year solutions = do
+  (args, extraArgs') <- span (/= "--") <$> getArgs
+  let extraArgs = case extraArgs' of
+        "--" : xs -> xs
+        xs -> xs
+
   token <-
     lookupEnv "AOC_SESSION_KEY" >>= \case
       Nothing -> errorAndDie "Session key must be provided in `AOC_SESSION_KEY` environment variable"
       Just token -> pure token
 
-  MkOpts {day, part, action} <- O.execParser parser
+  MkOpts {day, part, action} <- withArgs args $ O.execParser parser
 
   let opts = defaultAoCOpts year token
 
   case action of
     Submit -> do
       input <- runAoC_ opts (AoCInput day)
-      (_, result) <- case solutions (fromInteger $ dayInt day) part input of
+      (_, result) <- case ($ input) <$> solutions (fromInteger $ dayInt day) part of
         Nothing -> errorAndDie "Solution not implemented"
         Just solution -> runAoC_ opts . AoCSubmit day part . T.unpack $ solution
       putStrLn $ showSubmitRes result
     ShowInput -> runAoC_ opts (AoCInput day) >>= T.putStrLn
     ShowOutput -> do
       input <- runAoC_ opts (AoCInput day)
-      case solutions (fromInteger $ dayInt day) part input of
+      case ($ input) <$> solutions (fromInteger $ dayInt day) part of
         Nothing -> errorAndDie "Solution not implemented"
         Just solution -> T.putStrLn solution
     ShowPrompt -> do
       prompts <- runAoC_ opts (AoCPrompt day)
       T.putStrLn $ prompts ! part
+    Benchmark -> do
+      progName <- getProgName
+      case solutions (fromInteger $ dayInt day) part of
+        Nothing -> errorAndDie "Solution not implemented"
+        Just solution ->
+          let bench = C.env (runAoC_ opts (AoCInput day)) (C.bench "solution" . C.nf solution)
+              progName' = unwords (progName : args ++ ["--"])
+          in withProgName progName' . withArgs extraArgs $ C.defaultMain [bench]
 
 parser :: ParserInfo Opts
 parser = O.info (O.helper <*> parseOpts) O.fullDesc
@@ -83,6 +98,7 @@ parseAction =
     <|> O.flag' ShowInput (O.long "input" <> O.short 'i')
     <|> O.flag' ShowOutput (O.long "output" <> O.short 'o')
     <|> O.flag' ShowPrompt (O.long "prompt" <> O.short 'p')
+    <|> O.flag' Benchmark (O.long "bench" <> O.short 'b')
     <|> pure ShowOutput
 
 errorAndDie :: Text -> IO a

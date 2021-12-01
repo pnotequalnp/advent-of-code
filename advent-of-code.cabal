@@ -26,5 +26,6 @@ library
     , advent-of-code-api
     , base                  ^>=4.14.1.0
     , containers
+    , criterion
     , optparse-applicative
     , text

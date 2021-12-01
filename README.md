@@ -1,6 +1,8 @@
 # Advent of Code
 Advent of Code framework for Haskell based on
-[`advent-of-code-api`](https://github.com/mstksg/advent-of-code-api) by Justin Le.
+[`advent-of-code-api`](https://github.com/mstksg/advent-of-code-api) by Justin Le. Includes
+fetching inputs, running solutions, submitting solutions, and benchmarking solutions all out of the
+box.
 
 ## Usage
 ```haskell
@@ -10,9 +12,9 @@ import Data.Text (Text)
 main :: IO ()
 main = runAdvent 2021 solve
   where
-    solve 1 Part1 = Just . day1part1
-    solve 7 Part2 = Just . day7part2
-    solve _ _ = const Nothing
+    solve 1 Part1 = Just day1part1
+    solve 7 Part2 = Just day7part2
+    solve _ _ = Nothing
     
 day1part1 :: Text -> Text
 day1part1 input = "This is probably not the correct answer"
