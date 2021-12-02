@@ -7,6 +7,7 @@ module Advent.Of.Code.Input
     nonEmpty,
     plainList,
     plainNonEmpty,
+    readt,
     wordsList,
     wordsList',
     wordsNonEmpty,
@@ -18,6 +19,9 @@ import Data.List.NonEmpty (NonEmpty)
 import Data.List.NonEmpty qualified as NE
 import Data.Text (Text)
 import Data.Text qualified as T
+
+readt :: Read a => Text -> a
+readt = read . T.unpack
 
 plainNonEmpty :: Text -> NonEmpty Text
 plainNonEmpty = NE.fromList . plainList
