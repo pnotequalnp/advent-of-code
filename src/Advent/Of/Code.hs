@@ -5,9 +5,10 @@ module Advent.Of.Code
 where
 
 import Advent
-import Control.Applicative ((<|>))
+import Control.Applicative (optional)
 import Control.Monad ((<=<))
 import Criterion.Main qualified as C
+import Data.Foldable (asum)
 import Data.Map ((!))
 import Data.Text (Text)
 import Data.Text qualified as T
@@ -21,9 +22,12 @@ import Text.Read (readMaybe)
 
 data Opts = MkOpts
   { day :: Day,
-    part :: Part,
-    action :: Action
+    part :: Maybe Part,
+    action :: Action,
+    inputSource :: InputSource
   }
+
+data InputSource = API | Stdin | InputFile FilePath
 
 data Action
   = Submit
@@ -33,7 +37,7 @@ data Action
   | Benchmark
 
 runAdvent :: Integer -> (Int -> Part -> Maybe (Text -> Text)) -> IO ()
-runAdvent year solutions = do
+runAdvent year ((. fromInteger . dayInt) -> solutions) = do
   (args, extraArgs') <- span (/= "--") <$> getArgs
   let extraArgs = case extraArgs' of
         "--" : xs -> xs
@@ -44,40 +48,45 @@ runAdvent year solutions = do
       Nothing -> errorAndDie "Session key must be provided in `AOC_SESSION_KEY` environment variable"
       Just token -> pure token
 
-  MkOpts {day, part, action} <- withArgs args $ O.execParser parser
+  MkOpts {day, part, action, inputSource} <- withArgs args $ O.execParser parser
 
   let opts = defaultAoCOpts year token
+      fetchPart = maybe (errorAndDie "Part required") pure part
+      fetchSolution =
+        fetchPart >>= maybe (errorAndDie "Solution not implemented") pure . solutions day
+      fetchInput = case inputSource of
+        API -> runAoC_ opts (AoCInput day)
+        Stdin -> T.getContents
+        InputFile filepath -> T.readFile filepath
+      runSolution = fetchSolution <*> fetchInput
 
   case action of
     Submit -> do
-      input <- runAoC_ opts (AoCInput day)
-      (_, result) <- case ($ input) <$> solutions (fromInteger $ dayInt day) part of
-        Nothing -> errorAndDie "Solution not implemented"
-        Just solution -> runAoC_ opts . AoCSubmit day part . T.unpack $ solution
+      case inputSource of
+        API -> pure ()
+        _ -> T.hPutStrLn stderr "WARNING: using non-API input to submit"
+      part' <- fetchPart
+      solution <- runSolution
+      (_, result) <- runAoC_ opts . AoCSubmit day part' . T.unpack $ solution
       putStrLn $ showSubmitRes result
-    ShowInput -> runAoC_ opts (AoCInput day) >>= T.putStrLn
-    ShowOutput -> do
-      input <- runAoC_ opts (AoCInput day)
-      case ($ input) <$> solutions (fromInteger $ dayInt day) part of
-        Nothing -> errorAndDie "Solution not implemented"
-        Just solution -> T.putStrLn solution
+    ShowInput -> fetchInput >>= T.putStrLn
+    ShowOutput -> runSolution >>= print
     ShowPrompt -> do
-      prompts <- runAoC_ opts (AoCPrompt day)
-      T.putStrLn $ prompts ! part
+      part' <- fetchPart
+      prompt <- runAoC_ opts (AoCPrompt day)
+      T.putStrLn $ prompt ! part'
     Benchmark -> do
+      solution <- fetchSolution
       progName <- getProgName
-      case solutions (fromInteger $ dayInt day) part of
-        Nothing -> errorAndDie "Solution not implemented"
-        Just solution ->
-          let bench = C.env (runAoC_ opts (AoCInput day)) (C.bench "solution" . C.nf solution)
-              progName' = unwords (progName : args ++ ["--"])
-          in withProgName progName' . withArgs extraArgs $ C.defaultMain [bench]
+      let bench = C.env fetchInput $ C.bench "solution" . C.nf solution
+          progName' = unwords (progName : args ++ ["--"])
+      withProgName progName' . withArgs extraArgs $ C.defaultMain [bench]
 
 parser :: ParserInfo Opts
 parser = O.info (O.helper <*> parseOpts) O.fullDesc
 
 parseOpts :: Parser Opts
-parseOpts = MkOpts <$> parseDay <*> parsePart <*> parseAction
+parseOpts = MkOpts <$> parseDay <*> optional parsePart <*> parseAction <*> parseInput
 
 parseDay :: Parser Day
 parseDay = O.argument readDay $ O.metavar "DAY"
@@ -94,12 +103,23 @@ parsePart = O.argument readPart $ O.metavar "PART"
 
 parseAction :: Parser Action
 parseAction =
-  O.flag' Submit (O.long "submit" <> O.short 's')
-    <|> O.flag' ShowInput (O.long "input" <> O.short 'i')
-    <|> O.flag' ShowOutput (O.long "output" <> O.short 'o')
-    <|> O.flag' ShowPrompt (O.long "prompt" <> O.short 'p')
-    <|> O.flag' Benchmark (O.long "bench" <> O.short 'b')
-    <|> pure ShowOutput
+  asum
+    [ O.flag' Submit (O.long "submit" <> O.short 's'),
+      O.flag' ShowInput (O.long "input" <> O.short 'i'),
+      O.flag' ShowOutput (O.long "output" <> O.short 'o'),
+      O.flag' ShowPrompt (O.long "prompt" <> O.short 'p'),
+      O.flag' Benchmark (O.long "bench" <> O.short 'b'),
+      pure ShowOutput
+    ]
+
+parseInput :: Parser InputSource
+parseInput =
+  asum
+    [ O.flag' API (O.long "api"),
+      O.flag' Stdin (O.long "stdin"),
+      InputFile <$> O.strOption (O.long "file" <> O.short 'f' <> O.metavar "PATH"),
+      pure API
+    ]
 
 errorAndDie :: Text -> IO a
 errorAndDie msg = T.hPutStrLn stderr msg *> exitFailure

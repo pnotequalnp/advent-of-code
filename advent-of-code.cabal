@@ -21,6 +21,7 @@ library
     LambdaCase
     NamedFieldPuns
     OverloadedStrings
+    ViewPatterns
 
   build-depends:
     , advent-of-code-api    ^>=0.2.8
