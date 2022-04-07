@@ -13,6 +13,7 @@
 module Advent.Of.Code
   ( -- * Advent of Code
     runAdvent,
+    runAdvent',
     Day (..),
     Part (..),
   )
@@ -29,7 +30,7 @@ import Data.Map qualified as Map
 import Data.Text (Text)
 import Data.Text qualified as T
 import Data.Text.IO qualified as T
-import Data.Version (showVersion)
+import Data.Version (Version, showVersion)
 import Paths_advent_of_code (version)
 import System.Environment (getArgs, getProgName, lookupEnv, withArgs, withProgName)
 import System.Exit (exitFailure)
@@ -77,7 +78,19 @@ runAdvent ::
   -- | Solutions
   (Day -> Part -> Maybe (Text -> Text)) ->
   IO ()
-runAdvent year ((. toDay) -> solutions) = do
+runAdvent = runAdvent' Nothing
+
+-- | Entry point that specifies the version of your solutions with the @--version@ option. See
+-- `runAdvent`.
+runAdvent' ::
+  -- | Version of the solutions
+  Maybe Version ->
+  -- | The AoC year
+  Integer ->
+  -- | Solutions
+  (Day -> Part -> Maybe (Text -> Text)) ->
+  IO ()
+runAdvent' v year ((. toDay) -> solutions) = do
   (args, extraArgs') <- span (/= "--") <$> getArgs
   let extraArgs = case extraArgs' of
         "--" : xs -> xs
@@ -141,7 +154,11 @@ runAdvent year ((. toDay) -> solutions) = do
       solution <- fetchSolution
       let bench = Criterion.env fetchInput $ Criterion.bench "solution" . Criterion.nf solution
       withExtraArgs (Criterion.defaultMain [bench])
-    Version -> hPutStrLn stderr (showVersion version)
+    Version -> hPutStrLn stderr case v of
+      Nothing -> frameworkVersion
+      Just v' -> showVersion v' <> " (" <> frameworkVersion <> ")"
+      where
+        frameworkVersion = "Advent of Code Framework " <> showVersion version
 
 errorAndDie :: Text -> IO a
 errorAndDie msg = T.hPutStrLn stderr msg *> exitFailure
