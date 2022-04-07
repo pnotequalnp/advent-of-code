@@ -29,16 +29,40 @@ import Data.Map qualified as Map
 import Data.Text (Text)
 import Data.Text qualified as T
 import Data.Text.IO qualified as T
+import Data.Version (showVersion)
+import Paths_advent_of_code (version)
 import System.Environment (getArgs, getProgName, lookupEnv, withArgs, withProgName)
 import System.Exit (exitFailure)
-import System.IO (stderr)
+import System.IO (hPutStrLn, stderr)
 import Test.Tasty qualified as Tasty
 
 -- | The day of a challenge.
 data Day
-  = Day1 | Day2 | Day3 | Day4 | Day5 | Day6 | Day7 | Day8 | Day9
-  | Day10 | Day11 | Day12 | Day13 | Day14 | Day15 | Day16 | Day17 | Day18 | Day19
-  | Day20 | Day21 | Day22 | Day23 | Day24 | Day25
+  = Day1
+  | Day2
+  | Day3
+  | Day4
+  | Day5
+  | Day6
+  | Day7
+  | Day8
+  | Day9
+  | Day10
+  | Day11
+  | Day12
+  | Day13
+  | Day14
+  | Day15
+  | Day16
+  | Day17
+  | Day18
+  | Day19
+  | Day20
+  | Day21
+  | Day22
+  | Day23
+  | Day24
+  | Day25
   deriving (Enum)
 
 toDay :: Advent.Day -> Day
@@ -117,6 +141,7 @@ runAdvent year ((. toDay) -> solutions) = do
       solution <- fetchSolution
       let bench = Criterion.env fetchInput $ Criterion.bench "solution" . Criterion.nf solution
       withExtraArgs (Criterion.defaultMain [bench])
+    Version -> hPutStrLn stderr (showVersion version)
 
 errorAndDie :: Text -> IO a
 errorAndDie msg = T.hPutStrLn stderr msg *> exitFailure

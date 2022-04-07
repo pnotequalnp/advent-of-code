@@ -58,6 +58,8 @@ data Action
     Test FilePath
   | -- | Benchmark solutions against the input
     Benchmark
+  | -- | Show version and exit
+    Version
 
 -- | Advent of Code framework CLI option parser.
 parser :: ParserInfo Opts
@@ -88,6 +90,7 @@ parseAction =
       flag' ShowPrompt (long "prompt" <> short 'p'),
       Test <$> strOption (long "test" <> short 't' <> metavar "PATH" <> value "tests.toml"),
       flag' Benchmark (long "bench" <> short 'b'),
+      flag' Version (long "version" <> short 'v'),
       pure ShowOutput
     ]
 

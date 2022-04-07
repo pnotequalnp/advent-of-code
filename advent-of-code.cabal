@@ -1,6 +1,6 @@
 cabal-version: 2.4
 name:          advent-of-code
-version:       0.1.0.0
+version:       0.2.0.0
 synopsis:      Advent of Code framework
 description:   Framework for automatically fetching, testing, benchmarking, and submitting AoC problems
 category:      Web
