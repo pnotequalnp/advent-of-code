@@ -53,19 +53,19 @@ TomlBiMap Key k
 -&gt; TomlBiMap Key (Day, Part)
 forall e a b. (a -&gt; Either e b) -&gt; (b -&gt; Either e a) -&gt; BiMap e a b
 </span><a href="../file:///nix/store/h49qkwr8mm18wn9m07bqvg9z1769314r-tomland-1.3.2.0-doc/share/doc/tomland-1.3.2.0/html/src"><span class="hs-identifier hs-var">BiMap</span></a></span><span> </span><span class="annot"><span class="annottext">Key -&gt; Either TomlBiMapError (Day, Part)
-</span><a href="#local-6989586621679125183"><span class="hs-identifier hs-var">fromKey</span></a></span><span> </span><span class="annot"><span class="annottext">(Day, Part) -&gt; Either TomlBiMapError Key
+</span><a href="#local-6989586621679125235"><span class="hs-identifier hs-var">fromKey</span></a></span><span> </span><span class="annot"><span class="annottext">(Day, Part) -&gt; Either TomlBiMapError Key
 forall a. (Day, Part) -&gt; Either a Key
-</span><a href="#local-6989586621679125182"><span class="hs-identifier hs-var">toKey</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">TomlCodec Test -&gt; Key -&gt; TomlCodec [Test]
+</span><a href="#local-6989586621679125234"><span class="hs-identifier hs-var">toKey</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">TomlCodec Test -&gt; Key -&gt; TomlCodec [Test]
 forall a. TomlCodec a -&gt; Key -&gt; TomlCodec [a]
 </span><a href="../file:///nix/store/h49qkwr8mm18wn9m07bqvg9z1769314r-tomland-1.3.2.0-doc/share/doc/tomland-1.3.2.0/html/src"><span class="hs-identifier hs-var">list</span></a></span><span> </span><span class="annot"><span class="annottext">TomlCodec Test
 forall a. (Generic a, GenericCodec (Rep a)) =&gt; TomlCodec a
 </span><a href="../file:///nix/store/h49qkwr8mm18wn9m07bqvg9z1769314r-tomland-1.3.2.0-doc/share/doc/tomland-1.3.2.0/html/src"><span class="hs-identifier hs-var">genericCodec</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">Key
 </span><span class="hs-string">&quot;test&quot;</span></span><span>
 </span><span id="line-37"></span><span>  </span><span class="hs-keyword">where</span><span>
-</span><span id="line-38"></span><span>    </span><span id="local-6989586621679125182"><span class="annot"><span class="annottext">toKey :: (Day, Part) -&gt; Either a Key
-</span><a href="#local-6989586621679125182"><span class="hs-identifier hs-var hs-var">toKey</span></a></span></span><span> </span><span class="hs-special">(</span><span id="local-6989586621679125179"><span class="annot"><span class="annottext">Day
-</span><a href="#local-6989586621679125179"><span class="hs-identifier hs-var">day</span></a></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679125178"><span class="annot"><span class="annottext">Part
-</span><a href="#local-6989586621679125178"><span class="hs-identifier hs-var">part</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-38"></span><span>    </span><span id="local-6989586621679125234"><span class="annot"><span class="annottext">toKey :: (Day, Part) -&gt; Either a Key
+</span><a href="#local-6989586621679125234"><span class="hs-identifier hs-var hs-var">toKey</span></a></span></span><span> </span><span class="hs-special">(</span><span id="local-6989586621679125231"><span class="annot"><span class="annottext">Day
+</span><a href="#local-6989586621679125231"><span class="hs-identifier hs-var">day</span></a></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679125230"><span class="annot"><span class="annottext">Part
+</span><a href="#local-6989586621679125230"><span class="hs-identifier hs-var">part</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span>
 </span><span id="line-39"></span><span>      </span><span class="annot"><span class="annottext">Key -&gt; Either a Key
 forall a b. b -&gt; Either a b
 </span><a href="../file:///nix/store/s074i6fx3dbsw5dcyizf4mhh5kpsmw3p-ghc-8.10.7-doc/share/doc/ghc/html/libraries/base-4.14.3.0/src"><span class="hs-identifier hs-var">Right</span></a></span><span> </span><span class="annot"><span class="annottext">(Key -&gt; Either a Key) -&gt; Key -&gt; Either a Key
@@ -80,7 +80,7 @@ forall a. Show a =&gt; a -&gt; String
 forall a b. (a -&gt; b) -&gt; a -&gt; b
 </span><a href="../file:///nix/store/s074i6fx3dbsw5dcyizf4mhh5kpsmw3p-ghc-8.10.7-doc/share/doc/ghc/html/libraries/base-4.14.3.0/src"><span class="hs-operator hs-var">$</span></a></span><span> </span><span class="annot"><span class="annottext">Day -&gt; Integer
 </span><a href="../file:///nix/store/80rp8figxa05200jqagdpkb31b733isy-advent-of-code-api-0.2.8.1-doc/share/doc/advent-of-code-api-0.2.8.1/html/src"><span class="hs-identifier hs-var">dayInt</span></a></span><span> </span><span class="annot"><span class="annottext">Day
-</span><a href="#local-6989586621679125179"><span class="hs-identifier hs-var">day</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">Piece -&gt; [Piece] -&gt; Key
+</span><a href="#local-6989586621679125231"><span class="hs-identifier hs-var">day</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">Piece -&gt; [Piece] -&gt; Key
 </span><a href="../file:///nix/store/h49qkwr8mm18wn9m07bqvg9z1769314r-tomland-1.3.2.0-doc/share/doc/tomland-1.3.2.0/html/src"><span class="hs-operator hs-var">:||</span></a></span><span> </span><span class="hs-special">[</span><span class="annot"><span class="annottext">Text -&gt; Piece
 </span><a href="../file:///nix/store/h49qkwr8mm18wn9m07bqvg9z1769314r-tomland-1.3.2.0-doc/share/doc/tomland-1.3.2.0/html/src"><span class="hs-identifier hs-var">Piece</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">String -&gt; Text
 </span><a href="../file:///nix/store/s074i6fx3dbsw5dcyizf4mhh5kpsmw3p-ghc-8.10.7-doc/share/doc/ghc/html/libraries/text-1.2.4.1/src"><span class="hs-identifier hs-var">T.pack</span></a></span><span> </span><span class="annot"><span class="annottext">(String -&gt; Text) -&gt; (Int -&gt; String) -&gt; Int -&gt; Text
@@ -91,9 +91,9 @@ forall a. Show a =&gt; a -&gt; String
 forall a b. (a -&gt; b) -&gt; a -&gt; b
 </span><a href="../file:///nix/store/s074i6fx3dbsw5dcyizf4mhh5kpsmw3p-ghc-8.10.7-doc/share/doc/ghc/html/libraries/base-4.14.3.0/src"><span class="hs-operator hs-var">$</span></a></span><span> </span><span class="annot"><span class="annottext">Part -&gt; Int
 </span><a href="../file:///nix/store/80rp8figxa05200jqagdpkb31b733isy-advent-of-code-api-0.2.8.1-doc/share/doc/advent-of-code-api-0.2.8.1/html/src"><span class="hs-identifier hs-var">partInt</span></a></span><span> </span><span class="annot"><span class="annottext">Part
-</span><a href="#local-6989586621679125178"><span class="hs-identifier hs-var">part</span></a></span><span class="hs-special">)</span><span class="hs-special">]</span><span>
-</span><span id="line-40"></span><span>    </span><span id="local-6989586621679125183"><span class="annot"><span class="annottext">fromKey :: Key -&gt; Either TomlBiMapError (Day, Part)
-</span><a href="#local-6989586621679125183"><span class="hs-identifier hs-var hs-var">fromKey</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
+</span><a href="#local-6989586621679125230"><span class="hs-identifier hs-var">part</span></a></span><span class="hs-special">)</span><span class="hs-special">]</span><span>
+</span><span id="line-40"></span><span>    </span><span id="local-6989586621679125235"><span class="annot"><span class="annottext">fromKey :: Key -&gt; Either TomlBiMapError (Day, Part)
+</span><a href="#local-6989586621679125235"><span class="hs-identifier hs-var hs-var">fromKey</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
 </span><span id="line-41"></span><span>      </span><span class="annot"><span class="annottext">Either TomlBiMapError (Day, Part)
 -&gt; ((Day, Part) -&gt; Either TomlBiMapError (Day, Part))
 -&gt; Maybe (Day, Part)
@@ -125,8 +125,8 @@ forall a. Read a =&gt; String -&gt; Maybe a
 </span><a href="../file:///nix/store/s074i6fx3dbsw5dcyizf4mhh5kpsmw3p-ghc-8.10.7-doc/share/doc/ghc/html/libraries/base-4.14.3.0/src"><span class="hs-identifier hs-var">readMaybe</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">(String -&gt; Maybe Day) -&gt; (Text -&gt; String) -&gt; Text -&gt; Maybe Day
 forall b c a. (b -&gt; c) -&gt; (a -&gt; b) -&gt; a -&gt; c
 </span><a href="../file:///nix/store/s074i6fx3dbsw5dcyizf4mhh5kpsmw3p-ghc-8.10.7-doc/share/doc/ghc/html/libraries/base-4.14.3.0/src"><span class="hs-operator hs-var">.</span></a></span><span> </span><span class="annot"><span class="annottext">Text -&gt; String
-</span><a href="../file:///nix/store/s074i6fx3dbsw5dcyizf4mhh5kpsmw3p-ghc-8.10.7-doc/share/doc/ghc/html/libraries/text-1.2.4.1/src"><span class="hs-identifier hs-var">T.unpack</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="../file:///nix/store/s074i6fx3dbsw5dcyizf4mhh5kpsmw3p-ghc-8.10.7-doc/share/doc/ghc/html/libraries/base-4.14.3.0/src"><span class="hs-identifier hs-type">Just</span></a></span><span> </span><span id="local-6989586621679125169"><span class="annot"><span class="annottext">Day
-</span><a href="#local-6989586621679125169"><span class="hs-identifier hs-var">day</span></a></span></span><span class="hs-special">)</span><span>
+</span><a href="../file:///nix/store/s074i6fx3dbsw5dcyizf4mhh5kpsmw3p-ghc-8.10.7-doc/share/doc/ghc/html/libraries/text-1.2.4.1/src"><span class="hs-identifier hs-var">T.unpack</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="../file:///nix/store/s074i6fx3dbsw5dcyizf4mhh5kpsmw3p-ghc-8.10.7-doc/share/doc/ghc/html/libraries/base-4.14.3.0/src"><span class="hs-identifier hs-type">Just</span></a></span><span> </span><span id="local-6989586621679125221"><span class="annot"><span class="annottext">Day
+</span><a href="#local-6989586621679125221"><span class="hs-identifier hs-var">day</span></a></span></span><span class="hs-special">)</span><span>
 </span><span id="line-43"></span><span>          </span><span class="annot"><a href="../file:///nix/store/h49qkwr8mm18wn9m07bqvg9z1769314r-tomland-1.3.2.0-doc/share/doc/tomland-1.3.2.0/html/src"><span class="hs-operator hs-type">:||</span></a></span><span> </span><span class="hs-special">[</span><span class="annot"><a href="../file:///nix/store/h49qkwr8mm18wn9m07bqvg9z1769314r-tomland-1.3.2.0-doc/share/doc/tomland-1.3.2.0/html/src"><span class="hs-identifier hs-type">Piece</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-special">(</span><span class="annot"><span class="annottext">Int -&gt; Maybe Part
 </span><a href="Advent.Of.Code.Test.Parsing.html#mkPart"><span class="hs-identifier hs-var">mkPart</span></a></span><span> </span><span class="annot"><span class="annottext">(Int -&gt; Maybe Part)
 -&gt; (String -&gt; Maybe Int) -&gt; String -&gt; Maybe Part
@@ -138,12 +138,12 @@ forall a. Read a =&gt; String -&gt; Maybe a
 </span><a href="../file:///nix/store/s074i6fx3dbsw5dcyizf4mhh5kpsmw3p-ghc-8.10.7-doc/share/doc/ghc/html/libraries/base-4.14.3.0/src"><span class="hs-identifier hs-var">readMaybe</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">(String -&gt; Maybe Part) -&gt; (Text -&gt; String) -&gt; Text -&gt; Maybe Part
 forall b c a. (b -&gt; c) -&gt; (a -&gt; b) -&gt; a -&gt; c
 </span><a href="../file:///nix/store/s074i6fx3dbsw5dcyizf4mhh5kpsmw3p-ghc-8.10.7-doc/share/doc/ghc/html/libraries/base-4.14.3.0/src"><span class="hs-operator hs-var">.</span></a></span><span> </span><span class="annot"><span class="annottext">Text -&gt; String
-</span><a href="../file:///nix/store/s074i6fx3dbsw5dcyizf4mhh5kpsmw3p-ghc-8.10.7-doc/share/doc/ghc/html/libraries/text-1.2.4.1/src"><span class="hs-identifier hs-var">T.unpack</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="../file:///nix/store/s074i6fx3dbsw5dcyizf4mhh5kpsmw3p-ghc-8.10.7-doc/share/doc/ghc/html/libraries/base-4.14.3.0/src"><span class="hs-identifier hs-type">Just</span></a></span><span> </span><span id="local-6989586621679125167"><span class="annot"><span class="annottext">Part
-</span><a href="#local-6989586621679125167"><span class="hs-identifier hs-var">part</span></a></span></span><span class="hs-special">)</span><span class="hs-special">]</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">(Day, Part) -&gt; Maybe (Day, Part)
+</span><a href="../file:///nix/store/s074i6fx3dbsw5dcyizf4mhh5kpsmw3p-ghc-8.10.7-doc/share/doc/ghc/html/libraries/text-1.2.4.1/src"><span class="hs-identifier hs-var">T.unpack</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="../file:///nix/store/s074i6fx3dbsw5dcyizf4mhh5kpsmw3p-ghc-8.10.7-doc/share/doc/ghc/html/libraries/base-4.14.3.0/src"><span class="hs-identifier hs-type">Just</span></a></span><span> </span><span id="local-6989586621679125219"><span class="annot"><span class="annottext">Part
+</span><a href="#local-6989586621679125219"><span class="hs-identifier hs-var">part</span></a></span></span><span class="hs-special">)</span><span class="hs-special">]</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">(Day, Part) -&gt; Maybe (Day, Part)
 forall a. a -&gt; Maybe a
 </span><a href="../file:///nix/store/s074i6fx3dbsw5dcyizf4mhh5kpsmw3p-ghc-8.10.7-doc/share/doc/ghc/html/libraries/base-4.14.3.0/src"><span class="hs-identifier hs-var">Just</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Day
-</span><a href="#local-6989586621679125169"><span class="hs-identifier hs-var">day</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Part
-</span><a href="#local-6989586621679125167"><span class="hs-identifier hs-var">part</span></a></span><span class="hs-special">)</span><span>
+</span><a href="#local-6989586621679125221"><span class="hs-identifier hs-var">day</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Part
+</span><a href="#local-6989586621679125219"><span class="hs-identifier hs-var">part</span></a></span><span class="hs-special">)</span><span>
 </span><span id="line-44"></span><span>        </span><span class="annot"><span class="annottext">Key
 </span><span class="hs-identifier">_</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Maybe (Day, Part)
 forall a. Maybe a

@@ -109,7 +109,7 @@ forall (f :: * -&gt; *) a b. Applicative f =&gt; f (a -&gt; b) -&gt; f a -&gt; f
 </span><a href="Advent.Of.Code.CLI.html#parseDay"><span class="hs-identifier hs-var hs-var">parseDay</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">ReadM Day -&gt; Mod ArgumentFields Day -&gt; Parser Day
 forall a. ReadM a -&gt; Mod ArgumentFields a -&gt; Parser a
 </span><a href="../file:///nix/store/hnpd4ywnysk8lpfd5q7698b3wmrg1xjm-optparse-applicative-0.16.1.0-doc/share/doc/optparse-applicative-0.16.1.0/html/src"><span class="hs-identifier hs-var">argument</span></a></span><span> </span><span class="annot"><span class="annottext">ReadM Day
-</span><a href="#local-6989586621679124966"><span class="hs-identifier hs-var">readDay</span></a></span><span> </span><span class="annot"><span class="annottext">(Mod ArgumentFields Day -&gt; Parser Day)
+</span><a href="#local-6989586621679125018"><span class="hs-identifier hs-var">readDay</span></a></span><span> </span><span class="annot"><span class="annottext">(Mod ArgumentFields Day -&gt; Parser Day)
 -&gt; Mod ArgumentFields Day -&gt; Parser Day
 forall a b. (a -&gt; b) -&gt; a -&gt; b
 </span><a href="../file:///nix/store/s074i6fx3dbsw5dcyizf4mhh5kpsmw3p-ghc-8.10.7-doc/share/doc/ghc/html/libraries/base-4.14.3.0/src"><span class="hs-operator hs-var">$</span></a></span><span> </span><span class="annot"><span class="annottext">String -&gt; Mod ArgumentFields Day
@@ -117,8 +117,8 @@ forall (f :: * -&gt; *) a. HasMetavar f =&gt; String -&gt; Mod f a
 </span><a href="../file:///nix/store/hnpd4ywnysk8lpfd5q7698b3wmrg1xjm-optparse-applicative-0.16.1.0-doc/share/doc/optparse-applicative-0.16.1.0/html/src"><span class="hs-identifier hs-var">metavar</span></a></span><span> </span><span class="annot"><span class="annottext">String
 </span><span class="hs-string">&quot;DAY&quot;</span></span><span>
 </span><span id="line-73"></span><span>  </span><span class="hs-keyword">where</span><span>
-</span><span id="line-74"></span><span>    </span><span id="local-6989586621679124966"><span class="annot"><span class="annottext">readDay :: ReadM Day
-</span><a href="#local-6989586621679124966"><span class="hs-identifier hs-var hs-var">readDay</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(String -&gt; Maybe Day) -&gt; ReadM Day
+</span><span id="line-74"></span><span>    </span><span id="local-6989586621679125018"><span class="annot"><span class="annottext">readDay :: ReadM Day
+</span><a href="#local-6989586621679125018"><span class="hs-identifier hs-var hs-var">readDay</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(String -&gt; Maybe Day) -&gt; ReadM Day
 forall a. (String -&gt; Maybe a) -&gt; ReadM a
 </span><a href="../file:///nix/store/hnpd4ywnysk8lpfd5q7698b3wmrg1xjm-optparse-applicative-0.16.1.0-doc/share/doc/optparse-applicative-0.16.1.0/html/src"><span class="hs-identifier hs-var">maybeReader</span></a></span><span> </span><span class="annot"><span class="annottext">((String -&gt; Maybe Day) -&gt; ReadM Day)
 -&gt; (String -&gt; Maybe Day) -&gt; ReadM Day
@@ -138,7 +138,7 @@ forall a. Read a =&gt; String -&gt; Maybe a
 </span><a href="Advent.Of.Code.CLI.html#parsePart"><span class="hs-identifier hs-var hs-var">parsePart</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">ReadM Part -&gt; Mod ArgumentFields Part -&gt; Parser Part
 forall a. ReadM a -&gt; Mod ArgumentFields a -&gt; Parser a
 </span><a href="../file:///nix/store/hnpd4ywnysk8lpfd5q7698b3wmrg1xjm-optparse-applicative-0.16.1.0-doc/share/doc/optparse-applicative-0.16.1.0/html/src"><span class="hs-identifier hs-var">argument</span></a></span><span> </span><span class="annot"><span class="annottext">ReadM Part
-</span><a href="#local-6989586621679124963"><span class="hs-identifier hs-var">readPart</span></a></span><span> </span><span class="annot"><span class="annottext">(Mod ArgumentFields Part -&gt; Parser Part)
+</span><a href="#local-6989586621679125015"><span class="hs-identifier hs-var">readPart</span></a></span><span> </span><span class="annot"><span class="annottext">(Mod ArgumentFields Part -&gt; Parser Part)
 -&gt; Mod ArgumentFields Part -&gt; Parser Part
 forall a b. (a -&gt; b) -&gt; a -&gt; b
 </span><a href="../file:///nix/store/s074i6fx3dbsw5dcyizf4mhh5kpsmw3p-ghc-8.10.7-doc/share/doc/ghc/html/libraries/base-4.14.3.0/src"><span class="hs-operator hs-var">$</span></a></span><span> </span><span class="annot"><span class="annottext">String -&gt; Mod ArgumentFields Part
@@ -146,8 +146,8 @@ forall (f :: * -&gt; *) a. HasMetavar f =&gt; String -&gt; Mod f a
 </span><a href="../file:///nix/store/hnpd4ywnysk8lpfd5q7698b3wmrg1xjm-optparse-applicative-0.16.1.0-doc/share/doc/optparse-applicative-0.16.1.0/html/src"><span class="hs-identifier hs-var">metavar</span></a></span><span> </span><span class="annot"><span class="annottext">String
 </span><span class="hs-string">&quot;PART&quot;</span></span><span>
 </span><span id="line-78"></span><span>  </span><span class="hs-keyword">where</span><span>
-</span><span id="line-79"></span><span>    </span><span id="local-6989586621679124963"><span class="annot"><span class="annottext">readPart :: ReadM Part
-</span><a href="#local-6989586621679124963"><span class="hs-identifier hs-var hs-var">readPart</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(String -&gt; Maybe Part) -&gt; ReadM Part
+</span><span id="line-79"></span><span>    </span><span id="local-6989586621679125015"><span class="annot"><span class="annottext">readPart :: ReadM Part
+</span><a href="#local-6989586621679125015"><span class="hs-identifier hs-var hs-var">readPart</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(String -&gt; Maybe Part) -&gt; ReadM Part
 forall a. (String -&gt; Maybe a) -&gt; ReadM a
 </span><a href="../file:///nix/store/hnpd4ywnysk8lpfd5q7698b3wmrg1xjm-optparse-applicative-0.16.1.0-doc/share/doc/optparse-applicative-0.16.1.0/html/src"><span class="hs-identifier hs-var">maybeReader</span></a></span><span> </span><span class="hs-glyph">\</span><span class="hs-glyph">case</span><span>
 </span><span id="line-80"></span><span>      </span><span class="annot"><span class="annottext">String

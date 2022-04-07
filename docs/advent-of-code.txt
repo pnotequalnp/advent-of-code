@@ -7,7 +7,7 @@
 --   Framework for automatically fetching, testing, benchmarking, and
 --   submitting AoC problems
 @package advent-of-code
-@version 0.2.0.0
+@version 0.2.1.0
 
 
 -- | <h1>Advent.Of.Code.CLI</h1>
@@ -185,6 +185,10 @@ module Advent.Of.Code
 --   (Text -&gt; Text)</tt>. That <tt>Text -&gt; Text</tt> is used to
 --   compute the solution from the input, if it exists.
 runAdvent :: Integer -> (Day -> Part -> Maybe (Text -> Text)) -> IO ()
+
+-- | Entry point that specifies the version of your solutions with the
+--   <tt>--version</tt> option. See <a>runAdvent</a>.
+runAdvent' :: Maybe Version -> Integer -> (Day -> Part -> Maybe (Text -> Text)) -> IO ()
 
 -- | The day of a challenge.
 data Day
