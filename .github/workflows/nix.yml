@@ -1,0 +1,39 @@
+name: "Nix CI"
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build:
+    name: Build and Test
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2.4.0
+
+    - name: Install Nix
+      uses: cachix/install-nix-action@v15
+      with:
+        extra_nix_config: |
+          access-tokens = github.com=${{ secrets.GITHUB_TOKEN }}
+          extra-substituters = file://${{ github.workspace }}/store-cache?trusted=true
+    - name: Set up store cache
+      uses: actions/cache@v2
+      with:
+        path: store-cache
+        key: nix-store
+
+    - name: Build and run tests
+      run: nix build
+
+    - name: Check Cabal file
+      run: nix develop -c cabal check
+
+    - name: Update store cache
+      run: |
+        sudo rm -rf store-cache
+        sudo $(command -v nix) copy --to file://${PWD}/store-cache\?compression=none .#default.env
