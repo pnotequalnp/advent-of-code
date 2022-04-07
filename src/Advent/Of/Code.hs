@@ -133,7 +133,7 @@ runAdvent' v year ((. toDay) -> solutions) = do
       (_, result) <- runAoC_ opts . AoCSubmit day' part' . T.unpack $ solution
       putStrLn $ showSubmitRes result
     ShowInput -> fetchInput >>= T.putStrLn
-    ShowOutput -> runSolution >>= print
+    ShowOutput -> runSolution >>= T.putStrLn
     ShowPrompt -> do
       day' <- fetchDay
       part' <- fetchPart
