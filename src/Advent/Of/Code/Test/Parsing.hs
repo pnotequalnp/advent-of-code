@@ -1,3 +1,14 @@
+-- |
+-- Module      : Advent.Of.Code.Test.Parsing
+-- Description : Advent of Code solution test TOML parsing
+-- Copyright   : Kevin Mullins 2021-2022
+-- License     : ISC
+-- Maintainer  : kevin@pnotequalnp.com
+-- Stability   : unstable
+-- Portability : portable
+--
+-- = Advent.Of.Code.Test.Parsing
+-- TOML parsing utilities for Advent of Code solution tests.
 module Advent.Of.Code.Test.Parsing
   ( generateTests,
     parseTests,
@@ -13,9 +24,11 @@ import Data.Text qualified as T
 import Text.Read (readMaybe)
 import Toml hiding (day)
 
+-- | Parse TOML into `Tests`.
 parseTests :: Text -> Either [TomlDecodeError] Tests
 parseTests = decode testsCodec
 
+-- | Generate TOML for the given `Tests`.
 generateTests :: Tests -> Text
 generateTests = encode testsCodec
 

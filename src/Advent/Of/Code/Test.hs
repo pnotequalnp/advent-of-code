@@ -1,3 +1,14 @@
+-- |
+-- Module      : Advent.Of.Code.Test
+-- Description : Advent of Code solution tests
+-- Copyright   : Kevin Mullins 2021-2022
+-- License     : ISC
+-- Maintainer  : kevin@pnotequalnp.com
+-- Stability   : unstable
+-- Portability : portable
+--
+-- = Advent.Of.Code.Test
+-- Generation of HUnit tests for Advent of Code solutions given some example input/output pairs.
 module Advent.Of.Code.Test
   ( Test (..),
     Tests,
@@ -12,11 +23,12 @@ import Data.Text (Text)
 import Test.Tasty
 import Test.Tasty.HUnit
 
-type Solutions = (Day -> Part -> Maybe Solution)
+type Solutions = Day -> Part -> Maybe Solution
 
 type Solution = Text -> Text
 
-makeTests :: Solutions -> Tests -> TestTree
+-- | Generate tests for the given solutions and examples.
+makeTests :: (Day -> Part -> Maybe (Text -> Text)) -> Tests -> TestTree
 makeTests solutions = testGroup "advent" . Map.foldMapWithKey (pure .: makeDayTests solutions)
   where
     (.:) = (.) . (.)

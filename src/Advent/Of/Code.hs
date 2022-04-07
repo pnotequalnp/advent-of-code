@@ -1,10 +1,25 @@
+-- |
+-- Module      : Advent.Of.Code
+-- Description : Advent of Code framework
+-- Copyright   : Kevin Mullins 2021-2022
+-- License     : ISC
+-- Maintainer  : kevin@pnotequalnp.com
+-- Stability   : unstable
+-- Portability : portable
+--
+-- = Advent.Of.Code
+-- A framework for fetching inputs, submitting solutions, testing examples, and benchmarking
+-- solutions for [Advent of Code](https://adventofcode.com/).
 module Advent.Of.Code
-  ( Part (..),
+  ( -- * Advent of Code
     runAdvent,
+    Day (..),
+    Part (..),
   )
 where
 
-import Advent
+import Advent hiding (Day)
+import Advent qualified (Day)
 import Advent.Of.Code.CLI (Action (..), InputSource (..), Opts (..), execParser, parser)
 import Advent.Of.Code.Test (makeTests)
 import Advent.Of.Code.Test.Parsing (parseTests, prettyTomlDecodeErrors)
@@ -19,8 +34,26 @@ import System.Exit (exitFailure)
 import System.IO (stderr)
 import Test.Tasty qualified as Tasty
 
-runAdvent :: Integer -> (Int -> Part -> Maybe (Text -> Text)) -> IO ()
-runAdvent year ((. fromInteger . dayInt) -> solutions) = do
+-- | The day of a challenge.
+data Day
+  = Day1 | Day2 | Day3 | Day4 | Day5 | Day6 | Day7 | Day8 | Day9
+  | Day10 | Day11 | Day12 | Day13 | Day14 | Day15 | Day16 | Day17 | Day18 | Day19
+  | Day20 | Day21 | Day22 | Day23 | Day24 | Day25
+  deriving (Enum)
+
+toDay :: Advent.Day -> Day
+toDay = toEnum . subtract 1 . fromInteger . dayInt
+
+-- | The primary entry point for the framework. The solutions are expected as a function that takes
+-- the day and part and returns a @Maybe (Text -> Text)@. That @Text -> Text@ is used to compute the
+-- solution from the input, if it exists.
+runAdvent ::
+  -- | The AoC year
+  Integer ->
+  -- | Solutions
+  (Day -> Part -> Maybe (Text -> Text)) ->
+  IO ()
+runAdvent year ((. toDay) -> solutions) = do
   (args, extraArgs') <- span (/= "--") <$> getArgs
   let extraArgs = case extraArgs' of
         "--" : xs -> xs
