@@ -1,0 +1,335 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><link rel="stylesheet" type="text/css" href="style.css" /><script type="text/javascript" src="highlight.js"></script></head><body><pre><span class="hs-comment">-- |</span><span>
+</span><span id="line-2"></span><span class="hs-comment">-- Module      : Advent.Of.Code.CLI</span><span>
+</span><span id="line-3"></span><span class="hs-comment">-- Description : Advent of Code framework CLI parser</span><span>
+</span><span id="line-4"></span><span class="hs-comment">-- Copyright   : Kevin Mullins 2021-2022</span><span>
+</span><span id="line-5"></span><span class="hs-comment">-- License     : ISC</span><span>
+</span><span id="line-6"></span><span class="hs-comment">-- Maintainer  : kevin@pnotequalnp.com</span><span>
+</span><span id="line-7"></span><span class="hs-comment">-- Stability   : unstable</span><span>
+</span><span id="line-8"></span><span class="hs-comment">-- Portability : portable</span><span>
+</span><span id="line-9"></span><span class="hs-comment">--</span><span>
+</span><span id="line-10"></span><span class="hs-comment">-- = Advent.Of.Code.CLI</span><span>
+</span><span id="line-11"></span><span class="hs-comment">-- Basic CLI parser for the framework.</span><span>
+</span><span id="line-12"></span><span class="hs-keyword">module</span><span> </span><span class="hs-identifier">Advent.Of.Code.CLI</span><span>
+</span><span id="line-13"></span><span>  </span><span class="hs-special">(</span><span> </span><span class="annot"><span class="hs-comment">-- * Parsing</span></span><span>
+</span><span id="line-14"></span><span>    </span><span class="annot"><a href="Advent.Of.Code.CLI.html#parser"><span class="hs-identifier">parser</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-15"></span><span>    </span><span class="annot"><a href="../file:///nix/store/hnpd4ywnysk8lpfd5q7698b3wmrg1xjm-optparse-applicative-0.16.1.0-doc/share/doc/optparse-applicative-0.16.1.0/html/src"><span class="hs-identifier">execParser</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-16"></span><span>
+</span><span id="line-17"></span><span>    </span><span class="annot"><span class="hs-comment">-- * Types</span></span><span>
+</span><span id="line-18"></span><span>    </span><span class="annot"><a href="Advent.Of.Code.CLI.html#Action"><span class="hs-identifier">Action</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span>
+</span><span id="line-19"></span><span>    </span><span class="annot"><a href="Advent.Of.Code.CLI.html#InputSource"><span class="hs-identifier">InputSource</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span>
+</span><span id="line-20"></span><span>    </span><span class="annot"><a href="Advent.Of.Code.CLI.html#Opts"><span class="hs-identifier">Opts</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span>
+</span><span id="line-21"></span><span>  </span><span class="hs-special">)</span><span>
+</span><span id="line-22"></span><span class="hs-keyword">where</span><span>
+</span><span id="line-23"></span><span>
+</span><span id="line-24"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="../file:///nix/store/80rp8figxa05200jqagdpkb31b733isy-advent-of-code-api-0.2.8.1-doc/share/doc/advent-of-code-api-0.2.8.1/html/src"><span class="hs-identifier">Advent</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="../file:///nix/store/80rp8figxa05200jqagdpkb31b733isy-advent-of-code-api-0.2.8.1-doc/share/doc/advent-of-code-api-0.2.8.1/html/src"><span class="hs-identifier">Day</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="../file:///nix/store/80rp8figxa05200jqagdpkb31b733isy-advent-of-code-api-0.2.8.1-doc/share/doc/advent-of-code-api-0.2.8.1/html/src"><span class="hs-identifier">Part</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="annot"><a href="../file:///nix/store/80rp8figxa05200jqagdpkb31b733isy-advent-of-code-api-0.2.8.1-doc/share/doc/advent-of-code-api-0.2.8.1/html/src"><span class="hs-identifier">mkDay</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-25"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="../file:///nix/store/s074i6fx3dbsw5dcyizf4mhh5kpsmw3p-ghc-8.10.7-doc/share/doc/ghc/html/libraries/base-4.14.3.0/src"><span class="hs-identifier">Control.Monad</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="../file:///nix/store/s074i6fx3dbsw5dcyizf4mhh5kpsmw3p-ghc-8.10.7-doc/share/doc/ghc/html/libraries/base-4.14.3.0/src"><span class="hs-operator">(&lt;=&lt;)</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-26"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="../file:///nix/store/s074i6fx3dbsw5dcyizf4mhh5kpsmw3p-ghc-8.10.7-doc/share/doc/ghc/html/libraries/base-4.14.3.0/src"><span class="hs-identifier">Data.Foldable</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="../file:///nix/store/s074i6fx3dbsw5dcyizf4mhh5kpsmw3p-ghc-8.10.7-doc/share/doc/ghc/html/libraries/base-4.14.3.0/src"><span class="hs-identifier">asum</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-27"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="../file:///nix/store/hnpd4ywnysk8lpfd5q7698b3wmrg1xjm-optparse-applicative-0.16.1.0-doc/share/doc/optparse-applicative-0.16.1.0/html/src"><span class="hs-identifier">Options.Applicative</span></a></span><span>
+</span><span id="line-28"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="../file:///nix/store/s074i6fx3dbsw5dcyizf4mhh5kpsmw3p-ghc-8.10.7-doc/share/doc/ghc/html/libraries/base-4.14.3.0/src"><span class="hs-identifier">Text.Read</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="../file:///nix/store/s074i6fx3dbsw5dcyizf4mhh5kpsmw3p-ghc-8.10.7-doc/share/doc/ghc/html/libraries/base-4.14.3.0/src"><span class="hs-identifier">readMaybe</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-29"></span><span>
+</span><span id="line-30"></span><span class="hs-comment">-- | The configuration for the framework.</span><span>
+</span><span id="line-31"></span><span class="hs-keyword">data</span><span> </span><span id="Opts"><span class="annot"><a href="Advent.Of.Code.CLI.html#Opts"><span class="hs-identifier hs-var">Opts</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="MkOpts"><span class="annot"><a href="Advent.Of.Code.CLI.html#MkOpts"><span class="hs-identifier hs-var">MkOpts</span></a></span></span><span>
+</span><span id="line-32"></span><span>  </span><span class="hs-special">{</span><span> </span><span id="day"><span class="annot"><span class="annottext">Opts -&gt; Maybe Day
+</span><a href="Advent.Of.Code.CLI.html#day"><span class="hs-identifier hs-var hs-var">day</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="../file:///nix/store/s074i6fx3dbsw5dcyizf4mhh5kpsmw3p-ghc-8.10.7-doc/share/doc/ghc/html/libraries/base-4.14.3.0/src"><span class="hs-identifier hs-type">Maybe</span></a></span><span> </span><span class="annot"><a href="../file:///nix/store/80rp8figxa05200jqagdpkb31b733isy-advent-of-code-api-0.2.8.1-doc/share/doc/advent-of-code-api-0.2.8.1/html/src"><span class="hs-identifier hs-type">Day</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-33"></span><span>    </span><span id="part"><span class="annot"><span class="annottext">Opts -&gt; Maybe Part
+</span><a href="Advent.Of.Code.CLI.html#part"><span class="hs-identifier hs-var hs-var">part</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="../file:///nix/store/s074i6fx3dbsw5dcyizf4mhh5kpsmw3p-ghc-8.10.7-doc/share/doc/ghc/html/libraries/base-4.14.3.0/src"><span class="hs-identifier hs-type">Maybe</span></a></span><span> </span><span class="annot"><a href="../file:///nix/store/80rp8figxa05200jqagdpkb31b733isy-advent-of-code-api-0.2.8.1-doc/share/doc/advent-of-code-api-0.2.8.1/html/src"><span class="hs-identifier hs-type">Part</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-34"></span><span>    </span><span id="action"><span class="annot"><span class="annottext">Opts -&gt; Action
+</span><a href="Advent.Of.Code.CLI.html#action"><span class="hs-identifier hs-var hs-var">action</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Advent.Of.Code.CLI.html#Action"><span class="hs-identifier hs-type">Action</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-35"></span><span>    </span><span id="inputSource"><span class="annot"><span class="annottext">Opts -&gt; InputSource
+</span><a href="Advent.Of.Code.CLI.html#inputSource"><span class="hs-identifier hs-var hs-var">inputSource</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Advent.Of.Code.CLI.html#InputSource"><span class="hs-identifier hs-type">InputSource</span></a></span><span>
+</span><span id="line-36"></span><span>  </span><span class="hs-special">}</span><span>
+</span><span id="line-37"></span><span>
+</span><span id="line-38"></span><span class="hs-comment">-- | Where to fetch the input from.</span><span>
+</span><span id="line-39"></span><span class="hs-keyword">data</span><span> </span><span id="InputSource"><span class="annot"><a href="Advent.Of.Code.CLI.html#InputSource"><span class="hs-identifier hs-var">InputSource</span></a></span></span><span>
+</span><span id="line-40"></span><span>  </span><span class="hs-glyph">=</span><span> </span><span class="hs-comment">-- | Fetch from the AoC API</span><span>
+</span><span id="line-41"></span><span>    </span><span id="API"><span class="annot"><a href="Advent.Of.Code.CLI.html#API"><span class="hs-identifier hs-var">API</span></a></span></span><span>
+</span><span id="line-42"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span class="hs-comment">-- | Read from stdin</span><span>
+</span><span id="line-43"></span><span>    </span><span id="Stdin"><span class="annot"><a href="Advent.Of.Code.CLI.html#Stdin"><span class="hs-identifier hs-var">Stdin</span></a></span></span><span>
+</span><span id="line-44"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span class="hs-comment">-- | Read from the specified file</span><span>
+</span><span id="line-45"></span><span>    </span><span id="InputFile"><span class="annot"><a href="Advent.Of.Code.CLI.html#InputFile"><span class="hs-identifier hs-var">InputFile</span></a></span></span><span> </span><span class="annot"><a href="../file:///nix/store/s074i6fx3dbsw5dcyizf4mhh5kpsmw3p-ghc-8.10.7-doc/share/doc/ghc/html/libraries/base-4.14.3.0/src"><span class="hs-identifier hs-type">FilePath</span></a></span><span>
+</span><span id="line-46"></span><span>
+</span><span id="line-47"></span><span class="hs-comment">-- | The possible modes of action.</span><span>
+</span><span id="line-48"></span><span class="hs-keyword">data</span><span> </span><span id="Action"><span class="annot"><a href="Advent.Of.Code.CLI.html#Action"><span class="hs-identifier hs-var">Action</span></a></span></span><span>
+</span><span id="line-49"></span><span>  </span><span class="hs-glyph">=</span><span> </span><span class="hs-comment">-- | Compute solution and submit via the AoC API</span><span>
+</span><span id="line-50"></span><span>    </span><span id="Submit"><span class="annot"><a href="Advent.Of.Code.CLI.html#Submit"><span class="hs-identifier hs-var">Submit</span></a></span></span><span>
+</span><span id="line-51"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span class="hs-comment">-- | Show the input without computing the solution</span><span>
+</span><span id="line-52"></span><span>    </span><span id="ShowInput"><span class="annot"><a href="Advent.Of.Code.CLI.html#ShowInput"><span class="hs-identifier hs-var">ShowInput</span></a></span></span><span>
+</span><span id="line-53"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span class="hs-comment">-- | Compute and print the solution without submitting</span><span>
+</span><span id="line-54"></span><span>    </span><span id="ShowOutput"><span class="annot"><a href="Advent.Of.Code.CLI.html#ShowOutput"><span class="hs-identifier hs-var">ShowOutput</span></a></span></span><span>
+</span><span id="line-55"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span class="hs-comment">-- | Show the prompt without computing the solution</span><span>
+</span><span id="line-56"></span><span>    </span><span id="ShowPrompt"><span class="annot"><a href="Advent.Of.Code.CLI.html#ShowPrompt"><span class="hs-identifier hs-var">ShowPrompt</span></a></span></span><span>
+</span><span id="line-57"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span class="hs-comment">-- | Test solutions against the examples provided in a file</span><span>
+</span><span id="line-58"></span><span>    </span><span id="Test"><span class="annot"><a href="Advent.Of.Code.CLI.html#Test"><span class="hs-identifier hs-var">Test</span></a></span></span><span> </span><span class="annot"><a href="../file:///nix/store/s074i6fx3dbsw5dcyizf4mhh5kpsmw3p-ghc-8.10.7-doc/share/doc/ghc/html/libraries/base-4.14.3.0/src"><span class="hs-identifier hs-type">FilePath</span></a></span><span>
+</span><span id="line-59"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span class="hs-comment">-- | Benchmark solutions against the input</span><span>
+</span><span id="line-60"></span><span>    </span><span id="Benchmark"><span class="annot"><a href="Advent.Of.Code.CLI.html#Benchmark"><span class="hs-identifier hs-var">Benchmark</span></a></span></span><span>
+</span><span id="line-61"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span class="hs-comment">-- | Show version and exit</span><span>
+</span><span id="line-62"></span><span>    </span><span id="Version"><span class="annot"><a href="Advent.Of.Code.CLI.html#Version"><span class="hs-identifier hs-var">Version</span></a></span></span><span>
+</span><span id="line-63"></span><span>
+</span><span id="line-64"></span><span class="hs-comment">-- | Advent of Code framework CLI option parser.</span><span>
+</span><span id="line-65"></span><span class="annot"><a href="Advent.Of.Code.CLI.html#parser"><span class="hs-identifier hs-type">parser</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="../file:///nix/store/hnpd4ywnysk8lpfd5q7698b3wmrg1xjm-optparse-applicative-0.16.1.0-doc/share/doc/optparse-applicative-0.16.1.0/html/src"><span class="hs-identifier hs-type">ParserInfo</span></a></span><span> </span><span class="annot"><a href="Advent.Of.Code.CLI.html#Opts"><span class="hs-identifier hs-type">Opts</span></a></span><span>
+</span><span id="line-66"></span><span id="parser"><span class="annot"><span class="annottext">parser :: ParserInfo Opts
+</span><a href="Advent.Of.Code.CLI.html#parser"><span class="hs-identifier hs-var hs-var">parser</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Parser Opts -&gt; InfoMod Opts -&gt; ParserInfo Opts
+forall a. Parser a -&gt; InfoMod a -&gt; ParserInfo a
+</span><a href="../file:///nix/store/hnpd4ywnysk8lpfd5q7698b3wmrg1xjm-optparse-applicative-0.16.1.0-doc/share/doc/optparse-applicative-0.16.1.0/html/src"><span class="hs-identifier hs-var">info</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Parser (Opts -&gt; Opts)
+forall a. Parser (a -&gt; a)
+</span><a href="../file:///nix/store/hnpd4ywnysk8lpfd5q7698b3wmrg1xjm-optparse-applicative-0.16.1.0-doc/share/doc/optparse-applicative-0.16.1.0/html/src"><span class="hs-identifier hs-var">helper</span></a></span><span> </span><span class="annot"><span class="annottext">Parser (Opts -&gt; Opts) -&gt; Parser Opts -&gt; Parser Opts
+forall (f :: * -&gt; *) a b. Applicative f =&gt; f (a -&gt; b) -&gt; f a -&gt; f b
+</span><a href="../file:///nix/store/s074i6fx3dbsw5dcyizf4mhh5kpsmw3p-ghc-8.10.7-doc/share/doc/ghc/html/libraries/base-4.14.3.0/src"><span class="hs-operator hs-var">&lt;*&gt;</span></a></span><span> </span><span class="annot"><span class="annottext">Parser Opts
+</span><a href="Advent.Of.Code.CLI.html#parseOpts"><span class="hs-identifier hs-var">parseOpts</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">InfoMod Opts
+forall a. InfoMod a
+</span><a href="../file:///nix/store/hnpd4ywnysk8lpfd5q7698b3wmrg1xjm-optparse-applicative-0.16.1.0-doc/share/doc/optparse-applicative-0.16.1.0/html/src"><span class="hs-identifier hs-var">fullDesc</span></a></span><span>
+</span><span id="line-67"></span><span>
+</span><span id="line-68"></span><span class="annot"><a href="Advent.Of.Code.CLI.html#parseOpts"><span class="hs-identifier hs-type">parseOpts</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="../file:///nix/store/hnpd4ywnysk8lpfd5q7698b3wmrg1xjm-optparse-applicative-0.16.1.0-doc/share/doc/optparse-applicative-0.16.1.0/html/src"><span class="hs-identifier hs-type">Parser</span></a></span><span> </span><span class="annot"><a href="Advent.Of.Code.CLI.html#Opts"><span class="hs-identifier hs-type">Opts</span></a></span><span>
+</span><span id="line-69"></span><span id="parseOpts"><span class="annot"><span class="annottext">parseOpts :: Parser Opts
+</span><a href="Advent.Of.Code.CLI.html#parseOpts"><span class="hs-identifier hs-var hs-var">parseOpts</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Maybe Day -&gt; Maybe Part -&gt; Action -&gt; InputSource -&gt; Opts
+</span><a href="Advent.Of.Code.CLI.html#MkOpts"><span class="hs-identifier hs-var">MkOpts</span></a></span><span> </span><span class="annot"><span class="annottext">(Maybe Day -&gt; Maybe Part -&gt; Action -&gt; InputSource -&gt; Opts)
+-&gt; Parser (Maybe Day)
+-&gt; Parser (Maybe Part -&gt; Action -&gt; InputSource -&gt; Opts)
+forall (f :: * -&gt; *) a b. Functor f =&gt; (a -&gt; b) -&gt; f a -&gt; f b
+</span><a href="../file:///nix/store/s074i6fx3dbsw5dcyizf4mhh5kpsmw3p-ghc-8.10.7-doc/share/doc/ghc/html/libraries/base-4.14.3.0/src"><span class="hs-operator hs-var">&lt;$&gt;</span></a></span><span> </span><span class="annot"><span class="annottext">Parser Day -&gt; Parser (Maybe Day)
+forall (f :: * -&gt; *) a. Alternative f =&gt; f a -&gt; f (Maybe a)
+</span><a href="../file:///nix/store/s074i6fx3dbsw5dcyizf4mhh5kpsmw3p-ghc-8.10.7-doc/share/doc/ghc/html/libraries/base-4.14.3.0/src"><span class="hs-identifier hs-var">optional</span></a></span><span> </span><span class="annot"><span class="annottext">Parser Day
+</span><a href="Advent.Of.Code.CLI.html#parseDay"><span class="hs-identifier hs-var">parseDay</span></a></span><span> </span><span class="annot"><span class="annottext">Parser (Maybe Part -&gt; Action -&gt; InputSource -&gt; Opts)
+-&gt; Parser (Maybe Part) -&gt; Parser (Action -&gt; InputSource -&gt; Opts)
+forall (f :: * -&gt; *) a b. Applicative f =&gt; f (a -&gt; b) -&gt; f a -&gt; f b
+</span><a href="../file:///nix/store/s074i6fx3dbsw5dcyizf4mhh5kpsmw3p-ghc-8.10.7-doc/share/doc/ghc/html/libraries/base-4.14.3.0/src"><span class="hs-operator hs-var">&lt;*&gt;</span></a></span><span> </span><span class="annot"><span class="annottext">Parser Part -&gt; Parser (Maybe Part)
+forall (f :: * -&gt; *) a. Alternative f =&gt; f a -&gt; f (Maybe a)
+</span><a href="../file:///nix/store/s074i6fx3dbsw5dcyizf4mhh5kpsmw3p-ghc-8.10.7-doc/share/doc/ghc/html/libraries/base-4.14.3.0/src"><span class="hs-identifier hs-var">optional</span></a></span><span> </span><span class="annot"><span class="annottext">Parser Part
+</span><a href="Advent.Of.Code.CLI.html#parsePart"><span class="hs-identifier hs-var">parsePart</span></a></span><span> </span><span class="annot"><span class="annottext">Parser (Action -&gt; InputSource -&gt; Opts)
+-&gt; Parser Action -&gt; Parser (InputSource -&gt; Opts)
+forall (f :: * -&gt; *) a b. Applicative f =&gt; f (a -&gt; b) -&gt; f a -&gt; f b
+</span><a href="../file:///nix/store/s074i6fx3dbsw5dcyizf4mhh5kpsmw3p-ghc-8.10.7-doc/share/doc/ghc/html/libraries/base-4.14.3.0/src"><span class="hs-operator hs-var">&lt;*&gt;</span></a></span><span> </span><span class="annot"><span class="annottext">Parser Action
+</span><a href="Advent.Of.Code.CLI.html#parseAction"><span class="hs-identifier hs-var">parseAction</span></a></span><span> </span><span class="annot"><span class="annottext">Parser (InputSource -&gt; Opts) -&gt; Parser InputSource -&gt; Parser Opts
+forall (f :: * -&gt; *) a b. Applicative f =&gt; f (a -&gt; b) -&gt; f a -&gt; f b
+</span><a href="../file:///nix/store/s074i6fx3dbsw5dcyizf4mhh5kpsmw3p-ghc-8.10.7-doc/share/doc/ghc/html/libraries/base-4.14.3.0/src"><span class="hs-operator hs-var">&lt;*&gt;</span></a></span><span> </span><span class="annot"><span class="annottext">Parser InputSource
+</span><a href="Advent.Of.Code.CLI.html#parseInput"><span class="hs-identifier hs-var">parseInput</span></a></span><span>
+</span><span id="line-70"></span><span>
+</span><span id="line-71"></span><span class="annot"><a href="Advent.Of.Code.CLI.html#parseDay"><span class="hs-identifier hs-type">parseDay</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="../file:///nix/store/hnpd4ywnysk8lpfd5q7698b3wmrg1xjm-optparse-applicative-0.16.1.0-doc/share/doc/optparse-applicative-0.16.1.0/html/src"><span class="hs-identifier hs-type">Parser</span></a></span><span> </span><span class="annot"><a href="../file:///nix/store/80rp8figxa05200jqagdpkb31b733isy-advent-of-code-api-0.2.8.1-doc/share/doc/advent-of-code-api-0.2.8.1/html/src"><span class="hs-identifier hs-type">Day</span></a></span><span>
+</span><span id="line-72"></span><span id="parseDay"><span class="annot"><span class="annottext">parseDay :: Parser Day
+</span><a href="Advent.Of.Code.CLI.html#parseDay"><span class="hs-identifier hs-var hs-var">parseDay</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">ReadM Day -&gt; Mod ArgumentFields Day -&gt; Parser Day
+forall a. ReadM a -&gt; Mod ArgumentFields a -&gt; Parser a
+</span><a href="../file:///nix/store/hnpd4ywnysk8lpfd5q7698b3wmrg1xjm-optparse-applicative-0.16.1.0-doc/share/doc/optparse-applicative-0.16.1.0/html/src"><span class="hs-identifier hs-var">argument</span></a></span><span> </span><span class="annot"><span class="annottext">ReadM Day
+</span><a href="#local-6989586621679124966"><span class="hs-identifier hs-var">readDay</span></a></span><span> </span><span class="annot"><span class="annottext">(Mod ArgumentFields Day -&gt; Parser Day)
+-&gt; Mod ArgumentFields Day -&gt; Parser Day
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><a href="../file:///nix/store/s074i6fx3dbsw5dcyizf4mhh5kpsmw3p-ghc-8.10.7-doc/share/doc/ghc/html/libraries/base-4.14.3.0/src"><span class="hs-operator hs-var">$</span></a></span><span> </span><span class="annot"><span class="annottext">String -&gt; Mod ArgumentFields Day
+forall (f :: * -&gt; *) a. HasMetavar f =&gt; String -&gt; Mod f a
+</span><a href="../file:///nix/store/hnpd4ywnysk8lpfd5q7698b3wmrg1xjm-optparse-applicative-0.16.1.0-doc/share/doc/optparse-applicative-0.16.1.0/html/src"><span class="hs-identifier hs-var">metavar</span></a></span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;DAY&quot;</span></span><span>
+</span><span id="line-73"></span><span>  </span><span class="hs-keyword">where</span><span>
+</span><span id="line-74"></span><span>    </span><span id="local-6989586621679124966"><span class="annot"><span class="annottext">readDay :: ReadM Day
+</span><a href="#local-6989586621679124966"><span class="hs-identifier hs-var hs-var">readDay</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(String -&gt; Maybe Day) -&gt; ReadM Day
+forall a. (String -&gt; Maybe a) -&gt; ReadM a
+</span><a href="../file:///nix/store/hnpd4ywnysk8lpfd5q7698b3wmrg1xjm-optparse-applicative-0.16.1.0-doc/share/doc/optparse-applicative-0.16.1.0/html/src"><span class="hs-identifier hs-var">maybeReader</span></a></span><span> </span><span class="annot"><span class="annottext">((String -&gt; Maybe Day) -&gt; ReadM Day)
+-&gt; (String -&gt; Maybe Day) -&gt; ReadM Day
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><a href="../file:///nix/store/s074i6fx3dbsw5dcyizf4mhh5kpsmw3p-ghc-8.10.7-doc/share/doc/ghc/html/libraries/base-4.14.3.0/src"><span class="hs-operator hs-var">$</span></a></span><span> </span><span class="annot"><span class="annottext">Integer -&gt; Maybe Day
+</span><a href="../file:///nix/store/80rp8figxa05200jqagdpkb31b733isy-advent-of-code-api-0.2.8.1-doc/share/doc/advent-of-code-api-0.2.8.1/html/src"><span class="hs-identifier hs-var">mkDay</span></a></span><span> </span><span class="annot"><span class="annottext">(Integer -&gt; Maybe Day)
+-&gt; (String -&gt; Maybe Integer) -&gt; String -&gt; Maybe Day
+forall (m :: * -&gt; *) b c a.
+Monad m =&gt;
+(b -&gt; m c) -&gt; (a -&gt; m b) -&gt; a -&gt; m c
+</span><a href="../file:///nix/store/s074i6fx3dbsw5dcyizf4mhh5kpsmw3p-ghc-8.10.7-doc/share/doc/ghc/html/libraries/base-4.14.3.0/src"><span class="hs-operator hs-var">&lt;=&lt;</span></a></span><span> </span><span class="annot"><span class="annottext">String -&gt; Maybe Integer
+forall a. Read a =&gt; String -&gt; Maybe a
+</span><a href="../file:///nix/store/s074i6fx3dbsw5dcyizf4mhh5kpsmw3p-ghc-8.10.7-doc/share/doc/ghc/html/libraries/base-4.14.3.0/src"><span class="hs-identifier hs-var">readMaybe</span></a></span><span>
+</span><span id="line-75"></span><span>
+</span><span id="line-76"></span><span class="annot"><a href="Advent.Of.Code.CLI.html#parsePart"><span class="hs-identifier hs-type">parsePart</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="../file:///nix/store/hnpd4ywnysk8lpfd5q7698b3wmrg1xjm-optparse-applicative-0.16.1.0-doc/share/doc/optparse-applicative-0.16.1.0/html/src"><span class="hs-identifier hs-type">Parser</span></a></span><span> </span><span class="annot"><a href="../file:///nix/store/80rp8figxa05200jqagdpkb31b733isy-advent-of-code-api-0.2.8.1-doc/share/doc/advent-of-code-api-0.2.8.1/html/src"><span class="hs-identifier hs-type">Part</span></a></span><span>
+</span><span id="line-77"></span><span id="parsePart"><span class="annot"><span class="annottext">parsePart :: Parser Part
+</span><a href="Advent.Of.Code.CLI.html#parsePart"><span class="hs-identifier hs-var hs-var">parsePart</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">ReadM Part -&gt; Mod ArgumentFields Part -&gt; Parser Part
+forall a. ReadM a -&gt; Mod ArgumentFields a -&gt; Parser a
+</span><a href="../file:///nix/store/hnpd4ywnysk8lpfd5q7698b3wmrg1xjm-optparse-applicative-0.16.1.0-doc/share/doc/optparse-applicative-0.16.1.0/html/src"><span class="hs-identifier hs-var">argument</span></a></span><span> </span><span class="annot"><span class="annottext">ReadM Part
+</span><a href="#local-6989586621679124963"><span class="hs-identifier hs-var">readPart</span></a></span><span> </span><span class="annot"><span class="annottext">(Mod ArgumentFields Part -&gt; Parser Part)
+-&gt; Mod ArgumentFields Part -&gt; Parser Part
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><a href="../file:///nix/store/s074i6fx3dbsw5dcyizf4mhh5kpsmw3p-ghc-8.10.7-doc/share/doc/ghc/html/libraries/base-4.14.3.0/src"><span class="hs-operator hs-var">$</span></a></span><span> </span><span class="annot"><span class="annottext">String -&gt; Mod ArgumentFields Part
+forall (f :: * -&gt; *) a. HasMetavar f =&gt; String -&gt; Mod f a
+</span><a href="../file:///nix/store/hnpd4ywnysk8lpfd5q7698b3wmrg1xjm-optparse-applicative-0.16.1.0-doc/share/doc/optparse-applicative-0.16.1.0/html/src"><span class="hs-identifier hs-var">metavar</span></a></span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;PART&quot;</span></span><span>
+</span><span id="line-78"></span><span>  </span><span class="hs-keyword">where</span><span>
+</span><span id="line-79"></span><span>    </span><span id="local-6989586621679124963"><span class="annot"><span class="annottext">readPart :: ReadM Part
+</span><a href="#local-6989586621679124963"><span class="hs-identifier hs-var hs-var">readPart</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(String -&gt; Maybe Part) -&gt; ReadM Part
+forall a. (String -&gt; Maybe a) -&gt; ReadM a
+</span><a href="../file:///nix/store/hnpd4ywnysk8lpfd5q7698b3wmrg1xjm-optparse-applicative-0.16.1.0-doc/share/doc/optparse-applicative-0.16.1.0/html/src"><span class="hs-identifier hs-var">maybeReader</span></a></span><span> </span><span class="hs-glyph">\</span><span class="hs-glyph">case</span><span>
+</span><span id="line-80"></span><span>      </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;1&quot;</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Part -&gt; Maybe Part
+forall a. a -&gt; Maybe a
+</span><a href="../file:///nix/store/s074i6fx3dbsw5dcyizf4mhh5kpsmw3p-ghc-8.10.7-doc/share/doc/ghc/html/libraries/base-4.14.3.0/src"><span class="hs-identifier hs-var">Just</span></a></span><span> </span><span class="annot"><span class="annottext">Part
+</span><a href="../file:///nix/store/80rp8figxa05200jqagdpkb31b733isy-advent-of-code-api-0.2.8.1-doc/share/doc/advent-of-code-api-0.2.8.1/html/src"><span class="hs-identifier hs-var">Part1</span></a></span><span>
+</span><span id="line-81"></span><span>      </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;2&quot;</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Part -&gt; Maybe Part
+forall a. a -&gt; Maybe a
+</span><a href="../file:///nix/store/s074i6fx3dbsw5dcyizf4mhh5kpsmw3p-ghc-8.10.7-doc/share/doc/ghc/html/libraries/base-4.14.3.0/src"><span class="hs-identifier hs-var">Just</span></a></span><span> </span><span class="annot"><span class="annottext">Part
+</span><a href="../file:///nix/store/80rp8figxa05200jqagdpkb31b733isy-advent-of-code-api-0.2.8.1-doc/share/doc/advent-of-code-api-0.2.8.1/html/src"><span class="hs-identifier hs-var">Part2</span></a></span><span>
+</span><span id="line-82"></span><span>      </span><span class="annot"><span class="annottext">String
+</span><span class="hs-identifier">_</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Maybe Part
+forall a. Maybe a
+</span><a href="../file:///nix/store/s074i6fx3dbsw5dcyizf4mhh5kpsmw3p-ghc-8.10.7-doc/share/doc/ghc/html/libraries/base-4.14.3.0/src"><span class="hs-identifier hs-var">Nothing</span></a></span><span>
+</span><span id="line-83"></span><span>
+</span><span id="line-84"></span><span class="annot"><a href="Advent.Of.Code.CLI.html#parseAction"><span class="hs-identifier hs-type">parseAction</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="../file:///nix/store/hnpd4ywnysk8lpfd5q7698b3wmrg1xjm-optparse-applicative-0.16.1.0-doc/share/doc/optparse-applicative-0.16.1.0/html/src"><span class="hs-identifier hs-type">Parser</span></a></span><span> </span><span class="annot"><a href="Advent.Of.Code.CLI.html#Action"><span class="hs-identifier hs-type">Action</span></a></span><span>
+</span><span id="line-85"></span><span id="parseAction"><span class="annot"><span class="annottext">parseAction :: Parser Action
+</span><a href="Advent.Of.Code.CLI.html#parseAction"><span class="hs-identifier hs-var hs-var">parseAction</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-86"></span><span>  </span><span class="annot"><span class="annottext">[Parser Action] -&gt; Parser Action
+forall (t :: * -&gt; *) (f :: * -&gt; *) a.
+(Foldable t, Alternative f) =&gt;
+t (f a) -&gt; f a
+</span><a href="../file:///nix/store/s074i6fx3dbsw5dcyizf4mhh5kpsmw3p-ghc-8.10.7-doc/share/doc/ghc/html/libraries/base-4.14.3.0/src"><span class="hs-identifier hs-var">asum</span></a></span><span>
+</span><span id="line-87"></span><span>    </span><span class="hs-special">[</span><span> </span><span class="annot"><span class="annottext">Action -&gt; Mod FlagFields Action -&gt; Parser Action
+forall a. a -&gt; Mod FlagFields a -&gt; Parser a
+</span><a href="../file:///nix/store/hnpd4ywnysk8lpfd5q7698b3wmrg1xjm-optparse-applicative-0.16.1.0-doc/share/doc/optparse-applicative-0.16.1.0/html/src"><span class="hs-identifier hs-var">flag'</span></a></span><span> </span><span class="annot"><span class="annottext">Action
+</span><a href="Advent.Of.Code.CLI.html#Submit"><span class="hs-identifier hs-var">Submit</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">String -&gt; Mod FlagFields Action
+forall (f :: * -&gt; *) a. HasName f =&gt; String -&gt; Mod f a
+</span><a href="../file:///nix/store/hnpd4ywnysk8lpfd5q7698b3wmrg1xjm-optparse-applicative-0.16.1.0-doc/share/doc/optparse-applicative-0.16.1.0/html/src"><span class="hs-identifier hs-var">long</span></a></span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;submit&quot;</span></span><span> </span><span class="annot"><span class="annottext">Mod FlagFields Action
+-&gt; Mod FlagFields Action -&gt; Mod FlagFields Action
+forall a. Semigroup a =&gt; a -&gt; a -&gt; a
+</span><a href="../file:///nix/store/s074i6fx3dbsw5dcyizf4mhh5kpsmw3p-ghc-8.10.7-doc/share/doc/ghc/html/libraries/base-4.14.3.0/src"><span class="hs-operator hs-var">&lt;&gt;</span></a></span><span> </span><span class="annot"><span class="annottext">Char -&gt; Mod FlagFields Action
+forall (f :: * -&gt; *) a. HasName f =&gt; Char -&gt; Mod f a
+</span><a href="../file:///nix/store/hnpd4ywnysk8lpfd5q7698b3wmrg1xjm-optparse-applicative-0.16.1.0-doc/share/doc/optparse-applicative-0.16.1.0/html/src"><span class="hs-identifier hs-var">short</span></a></span><span> </span><span class="annot"><span class="annottext">Char
+</span><span class="hs-char">'s'</span></span><span class="hs-special">)</span><span class="hs-special">,</span><span>
+</span><span id="line-88"></span><span>      </span><span class="annot"><span class="annottext">Action -&gt; Mod FlagFields Action -&gt; Parser Action
+forall a. a -&gt; Mod FlagFields a -&gt; Parser a
+</span><a href="../file:///nix/store/hnpd4ywnysk8lpfd5q7698b3wmrg1xjm-optparse-applicative-0.16.1.0-doc/share/doc/optparse-applicative-0.16.1.0/html/src"><span class="hs-identifier hs-var">flag'</span></a></span><span> </span><span class="annot"><span class="annottext">Action
+</span><a href="Advent.Of.Code.CLI.html#ShowInput"><span class="hs-identifier hs-var">ShowInput</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">String -&gt; Mod FlagFields Action
+forall (f :: * -&gt; *) a. HasName f =&gt; String -&gt; Mod f a
+</span><a href="../file:///nix/store/hnpd4ywnysk8lpfd5q7698b3wmrg1xjm-optparse-applicative-0.16.1.0-doc/share/doc/optparse-applicative-0.16.1.0/html/src"><span class="hs-identifier hs-var">long</span></a></span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;input&quot;</span></span><span> </span><span class="annot"><span class="annottext">Mod FlagFields Action
+-&gt; Mod FlagFields Action -&gt; Mod FlagFields Action
+forall a. Semigroup a =&gt; a -&gt; a -&gt; a
+</span><a href="../file:///nix/store/s074i6fx3dbsw5dcyizf4mhh5kpsmw3p-ghc-8.10.7-doc/share/doc/ghc/html/libraries/base-4.14.3.0/src"><span class="hs-operator hs-var">&lt;&gt;</span></a></span><span> </span><span class="annot"><span class="annottext">Char -&gt; Mod FlagFields Action
+forall (f :: * -&gt; *) a. HasName f =&gt; Char -&gt; Mod f a
+</span><a href="../file:///nix/store/hnpd4ywnysk8lpfd5q7698b3wmrg1xjm-optparse-applicative-0.16.1.0-doc/share/doc/optparse-applicative-0.16.1.0/html/src"><span class="hs-identifier hs-var">short</span></a></span><span> </span><span class="annot"><span class="annottext">Char
+</span><span class="hs-char">'i'</span></span><span class="hs-special">)</span><span class="hs-special">,</span><span>
+</span><span id="line-89"></span><span>      </span><span class="annot"><span class="annottext">Action -&gt; Mod FlagFields Action -&gt; Parser Action
+forall a. a -&gt; Mod FlagFields a -&gt; Parser a
+</span><a href="../file:///nix/store/hnpd4ywnysk8lpfd5q7698b3wmrg1xjm-optparse-applicative-0.16.1.0-doc/share/doc/optparse-applicative-0.16.1.0/html/src"><span class="hs-identifier hs-var">flag'</span></a></span><span> </span><span class="annot"><span class="annottext">Action
+</span><a href="Advent.Of.Code.CLI.html#ShowOutput"><span class="hs-identifier hs-var">ShowOutput</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">String -&gt; Mod FlagFields Action
+forall (f :: * -&gt; *) a. HasName f =&gt; String -&gt; Mod f a
+</span><a href="../file:///nix/store/hnpd4ywnysk8lpfd5q7698b3wmrg1xjm-optparse-applicative-0.16.1.0-doc/share/doc/optparse-applicative-0.16.1.0/html/src"><span class="hs-identifier hs-var">long</span></a></span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;output&quot;</span></span><span> </span><span class="annot"><span class="annottext">Mod FlagFields Action
+-&gt; Mod FlagFields Action -&gt; Mod FlagFields Action
+forall a. Semigroup a =&gt; a -&gt; a -&gt; a
+</span><a href="../file:///nix/store/s074i6fx3dbsw5dcyizf4mhh5kpsmw3p-ghc-8.10.7-doc/share/doc/ghc/html/libraries/base-4.14.3.0/src"><span class="hs-operator hs-var">&lt;&gt;</span></a></span><span> </span><span class="annot"><span class="annottext">Char -&gt; Mod FlagFields Action
+forall (f :: * -&gt; *) a. HasName f =&gt; Char -&gt; Mod f a
+</span><a href="../file:///nix/store/hnpd4ywnysk8lpfd5q7698b3wmrg1xjm-optparse-applicative-0.16.1.0-doc/share/doc/optparse-applicative-0.16.1.0/html/src"><span class="hs-identifier hs-var">short</span></a></span><span> </span><span class="annot"><span class="annottext">Char
+</span><span class="hs-char">'o'</span></span><span class="hs-special">)</span><span class="hs-special">,</span><span>
+</span><span id="line-90"></span><span>      </span><span class="annot"><span class="annottext">Action -&gt; Mod FlagFields Action -&gt; Parser Action
+forall a. a -&gt; Mod FlagFields a -&gt; Parser a
+</span><a href="../file:///nix/store/hnpd4ywnysk8lpfd5q7698b3wmrg1xjm-optparse-applicative-0.16.1.0-doc/share/doc/optparse-applicative-0.16.1.0/html/src"><span class="hs-identifier hs-var">flag'</span></a></span><span> </span><span class="annot"><span class="annottext">Action
+</span><a href="Advent.Of.Code.CLI.html#ShowPrompt"><span class="hs-identifier hs-var">ShowPrompt</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">String -&gt; Mod FlagFields Action
+forall (f :: * -&gt; *) a. HasName f =&gt; String -&gt; Mod f a
+</span><a href="../file:///nix/store/hnpd4ywnysk8lpfd5q7698b3wmrg1xjm-optparse-applicative-0.16.1.0-doc/share/doc/optparse-applicative-0.16.1.0/html/src"><span class="hs-identifier hs-var">long</span></a></span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;prompt&quot;</span></span><span> </span><span class="annot"><span class="annottext">Mod FlagFields Action
+-&gt; Mod FlagFields Action -&gt; Mod FlagFields Action
+forall a. Semigroup a =&gt; a -&gt; a -&gt; a
+</span><a href="../file:///nix/store/s074i6fx3dbsw5dcyizf4mhh5kpsmw3p-ghc-8.10.7-doc/share/doc/ghc/html/libraries/base-4.14.3.0/src"><span class="hs-operator hs-var">&lt;&gt;</span></a></span><span> </span><span class="annot"><span class="annottext">Char -&gt; Mod FlagFields Action
+forall (f :: * -&gt; *) a. HasName f =&gt; Char -&gt; Mod f a
+</span><a href="../file:///nix/store/hnpd4ywnysk8lpfd5q7698b3wmrg1xjm-optparse-applicative-0.16.1.0-doc/share/doc/optparse-applicative-0.16.1.0/html/src"><span class="hs-identifier hs-var">short</span></a></span><span> </span><span class="annot"><span class="annottext">Char
+</span><span class="hs-char">'p'</span></span><span class="hs-special">)</span><span class="hs-special">,</span><span>
+</span><span id="line-91"></span><span>      </span><span class="annot"><span class="annottext">String -&gt; Action
+</span><a href="Advent.Of.Code.CLI.html#Test"><span class="hs-identifier hs-var">Test</span></a></span><span> </span><span class="annot"><span class="annottext">(String -&gt; Action) -&gt; Parser String -&gt; Parser Action
+forall (f :: * -&gt; *) a b. Functor f =&gt; (a -&gt; b) -&gt; f a -&gt; f b
+</span><a href="../file:///nix/store/s074i6fx3dbsw5dcyizf4mhh5kpsmw3p-ghc-8.10.7-doc/share/doc/ghc/html/libraries/base-4.14.3.0/src"><span class="hs-operator hs-var">&lt;$&gt;</span></a></span><span> </span><span class="annot"><span class="annottext">Mod OptionFields String -&gt; Parser String
+forall s. IsString s =&gt; Mod OptionFields s -&gt; Parser s
+</span><a href="../file:///nix/store/hnpd4ywnysk8lpfd5q7698b3wmrg1xjm-optparse-applicative-0.16.1.0-doc/share/doc/optparse-applicative-0.16.1.0/html/src"><span class="hs-identifier hs-var">strOption</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">String -&gt; Mod OptionFields String
+forall (f :: * -&gt; *) a. HasName f =&gt; String -&gt; Mod f a
+</span><a href="../file:///nix/store/hnpd4ywnysk8lpfd5q7698b3wmrg1xjm-optparse-applicative-0.16.1.0-doc/share/doc/optparse-applicative-0.16.1.0/html/src"><span class="hs-identifier hs-var">long</span></a></span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;test&quot;</span></span><span> </span><span class="annot"><span class="annottext">Mod OptionFields String
+-&gt; Mod OptionFields String -&gt; Mod OptionFields String
+forall a. Semigroup a =&gt; a -&gt; a -&gt; a
+</span><a href="../file:///nix/store/s074i6fx3dbsw5dcyizf4mhh5kpsmw3p-ghc-8.10.7-doc/share/doc/ghc/html/libraries/base-4.14.3.0/src"><span class="hs-operator hs-var">&lt;&gt;</span></a></span><span> </span><span class="annot"><span class="annottext">Char -&gt; Mod OptionFields String
+forall (f :: * -&gt; *) a. HasName f =&gt; Char -&gt; Mod f a
+</span><a href="../file:///nix/store/hnpd4ywnysk8lpfd5q7698b3wmrg1xjm-optparse-applicative-0.16.1.0-doc/share/doc/optparse-applicative-0.16.1.0/html/src"><span class="hs-identifier hs-var">short</span></a></span><span> </span><span class="annot"><span class="annottext">Char
+</span><span class="hs-char">'t'</span></span><span> </span><span class="annot"><span class="annottext">Mod OptionFields String
+-&gt; Mod OptionFields String -&gt; Mod OptionFields String
+forall a. Semigroup a =&gt; a -&gt; a -&gt; a
+</span><a href="../file:///nix/store/s074i6fx3dbsw5dcyizf4mhh5kpsmw3p-ghc-8.10.7-doc/share/doc/ghc/html/libraries/base-4.14.3.0/src"><span class="hs-operator hs-var">&lt;&gt;</span></a></span><span> </span><span class="annot"><span class="annottext">String -&gt; Mod OptionFields String
+forall (f :: * -&gt; *) a. HasMetavar f =&gt; String -&gt; Mod f a
+</span><a href="../file:///nix/store/hnpd4ywnysk8lpfd5q7698b3wmrg1xjm-optparse-applicative-0.16.1.0-doc/share/doc/optparse-applicative-0.16.1.0/html/src"><span class="hs-identifier hs-var">metavar</span></a></span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;PATH&quot;</span></span><span> </span><span class="annot"><span class="annottext">Mod OptionFields String
+-&gt; Mod OptionFields String -&gt; Mod OptionFields String
+forall a. Semigroup a =&gt; a -&gt; a -&gt; a
+</span><a href="../file:///nix/store/s074i6fx3dbsw5dcyizf4mhh5kpsmw3p-ghc-8.10.7-doc/share/doc/ghc/html/libraries/base-4.14.3.0/src"><span class="hs-operator hs-var">&lt;&gt;</span></a></span><span> </span><span class="annot"><span class="annottext">String -&gt; Mod OptionFields String
+forall (f :: * -&gt; *) a. HasValue f =&gt; a -&gt; Mod f a
+</span><a href="../file:///nix/store/hnpd4ywnysk8lpfd5q7698b3wmrg1xjm-optparse-applicative-0.16.1.0-doc/share/doc/optparse-applicative-0.16.1.0/html/src"><span class="hs-identifier hs-var">value</span></a></span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;tests.toml&quot;</span></span><span class="hs-special">)</span><span class="hs-special">,</span><span>
+</span><span id="line-92"></span><span>      </span><span class="annot"><span class="annottext">Action -&gt; Mod FlagFields Action -&gt; Parser Action
+forall a. a -&gt; Mod FlagFields a -&gt; Parser a
+</span><a href="../file:///nix/store/hnpd4ywnysk8lpfd5q7698b3wmrg1xjm-optparse-applicative-0.16.1.0-doc/share/doc/optparse-applicative-0.16.1.0/html/src"><span class="hs-identifier hs-var">flag'</span></a></span><span> </span><span class="annot"><span class="annottext">Action
+</span><a href="Advent.Of.Code.CLI.html#Benchmark"><span class="hs-identifier hs-var">Benchmark</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">String -&gt; Mod FlagFields Action
+forall (f :: * -&gt; *) a. HasName f =&gt; String -&gt; Mod f a
+</span><a href="../file:///nix/store/hnpd4ywnysk8lpfd5q7698b3wmrg1xjm-optparse-applicative-0.16.1.0-doc/share/doc/optparse-applicative-0.16.1.0/html/src"><span class="hs-identifier hs-var">long</span></a></span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;bench&quot;</span></span><span> </span><span class="annot"><span class="annottext">Mod FlagFields Action
+-&gt; Mod FlagFields Action -&gt; Mod FlagFields Action
+forall a. Semigroup a =&gt; a -&gt; a -&gt; a
+</span><a href="../file:///nix/store/s074i6fx3dbsw5dcyizf4mhh5kpsmw3p-ghc-8.10.7-doc/share/doc/ghc/html/libraries/base-4.14.3.0/src"><span class="hs-operator hs-var">&lt;&gt;</span></a></span><span> </span><span class="annot"><span class="annottext">Char -&gt; Mod FlagFields Action
+forall (f :: * -&gt; *) a. HasName f =&gt; Char -&gt; Mod f a
+</span><a href="../file:///nix/store/hnpd4ywnysk8lpfd5q7698b3wmrg1xjm-optparse-applicative-0.16.1.0-doc/share/doc/optparse-applicative-0.16.1.0/html/src"><span class="hs-identifier hs-var">short</span></a></span><span> </span><span class="annot"><span class="annottext">Char
+</span><span class="hs-char">'b'</span></span><span class="hs-special">)</span><span class="hs-special">,</span><span>
+</span><span id="line-93"></span><span>      </span><span class="annot"><span class="annottext">Action -&gt; Mod FlagFields Action -&gt; Parser Action
+forall a. a -&gt; Mod FlagFields a -&gt; Parser a
+</span><a href="../file:///nix/store/hnpd4ywnysk8lpfd5q7698b3wmrg1xjm-optparse-applicative-0.16.1.0-doc/share/doc/optparse-applicative-0.16.1.0/html/src"><span class="hs-identifier hs-var">flag'</span></a></span><span> </span><span class="annot"><span class="annottext">Action
+</span><a href="Advent.Of.Code.CLI.html#Version"><span class="hs-identifier hs-var">Version</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">String -&gt; Mod FlagFields Action
+forall (f :: * -&gt; *) a. HasName f =&gt; String -&gt; Mod f a
+</span><a href="../file:///nix/store/hnpd4ywnysk8lpfd5q7698b3wmrg1xjm-optparse-applicative-0.16.1.0-doc/share/doc/optparse-applicative-0.16.1.0/html/src"><span class="hs-identifier hs-var">long</span></a></span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;version&quot;</span></span><span> </span><span class="annot"><span class="annottext">Mod FlagFields Action
+-&gt; Mod FlagFields Action -&gt; Mod FlagFields Action
+forall a. Semigroup a =&gt; a -&gt; a -&gt; a
+</span><a href="../file:///nix/store/s074i6fx3dbsw5dcyizf4mhh5kpsmw3p-ghc-8.10.7-doc/share/doc/ghc/html/libraries/base-4.14.3.0/src"><span class="hs-operator hs-var">&lt;&gt;</span></a></span><span> </span><span class="annot"><span class="annottext">Char -&gt; Mod FlagFields Action
+forall (f :: * -&gt; *) a. HasName f =&gt; Char -&gt; Mod f a
+</span><a href="../file:///nix/store/hnpd4ywnysk8lpfd5q7698b3wmrg1xjm-optparse-applicative-0.16.1.0-doc/share/doc/optparse-applicative-0.16.1.0/html/src"><span class="hs-identifier hs-var">short</span></a></span><span> </span><span class="annot"><span class="annottext">Char
+</span><span class="hs-char">'v'</span></span><span class="hs-special">)</span><span class="hs-special">,</span><span>
+</span><span id="line-94"></span><span>      </span><span class="annot"><span class="annottext">Action -&gt; Parser Action
+forall (f :: * -&gt; *) a. Applicative f =&gt; a -&gt; f a
+</span><a href="../file:///nix/store/s074i6fx3dbsw5dcyizf4mhh5kpsmw3p-ghc-8.10.7-doc/share/doc/ghc/html/libraries/base-4.14.3.0/src"><span class="hs-identifier hs-var">pure</span></a></span><span> </span><span class="annot"><span class="annottext">Action
+</span><a href="Advent.Of.Code.CLI.html#ShowOutput"><span class="hs-identifier hs-var">ShowOutput</span></a></span><span>
+</span><span id="line-95"></span><span>    </span><span class="hs-special">]</span><span>
+</span><span id="line-96"></span><span>
+</span><span id="line-97"></span><span class="annot"><a href="Advent.Of.Code.CLI.html#parseInput"><span class="hs-identifier hs-type">parseInput</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="../file:///nix/store/hnpd4ywnysk8lpfd5q7698b3wmrg1xjm-optparse-applicative-0.16.1.0-doc/share/doc/optparse-applicative-0.16.1.0/html/src"><span class="hs-identifier hs-type">Parser</span></a></span><span> </span><span class="annot"><a href="Advent.Of.Code.CLI.html#InputSource"><span class="hs-identifier hs-type">InputSource</span></a></span><span>
+</span><span id="line-98"></span><span id="parseInput"><span class="annot"><span class="annottext">parseInput :: Parser InputSource
+</span><a href="Advent.Of.Code.CLI.html#parseInput"><span class="hs-identifier hs-var hs-var">parseInput</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-99"></span><span>  </span><span class="annot"><span class="annottext">[Parser InputSource] -&gt; Parser InputSource
+forall (t :: * -&gt; *) (f :: * -&gt; *) a.
+(Foldable t, Alternative f) =&gt;
+t (f a) -&gt; f a
+</span><a href="../file:///nix/store/s074i6fx3dbsw5dcyizf4mhh5kpsmw3p-ghc-8.10.7-doc/share/doc/ghc/html/libraries/base-4.14.3.0/src"><span class="hs-identifier hs-var">asum</span></a></span><span>
+</span><span id="line-100"></span><span>    </span><span class="hs-special">[</span><span> </span><span class="annot"><span class="annottext">InputSource -&gt; Mod FlagFields InputSource -&gt; Parser InputSource
+forall a. a -&gt; Mod FlagFields a -&gt; Parser a
+</span><a href="../file:///nix/store/hnpd4ywnysk8lpfd5q7698b3wmrg1xjm-optparse-applicative-0.16.1.0-doc/share/doc/optparse-applicative-0.16.1.0/html/src"><span class="hs-identifier hs-var">flag'</span></a></span><span> </span><span class="annot"><span class="annottext">InputSource
+</span><a href="Advent.Of.Code.CLI.html#API"><span class="hs-identifier hs-var">API</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">String -&gt; Mod FlagFields InputSource
+forall (f :: * -&gt; *) a. HasName f =&gt; String -&gt; Mod f a
+</span><a href="../file:///nix/store/hnpd4ywnysk8lpfd5q7698b3wmrg1xjm-optparse-applicative-0.16.1.0-doc/share/doc/optparse-applicative-0.16.1.0/html/src"><span class="hs-identifier hs-var">long</span></a></span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;api&quot;</span></span><span class="hs-special">)</span><span class="hs-special">,</span><span>
+</span><span id="line-101"></span><span>      </span><span class="annot"><span class="annottext">InputSource -&gt; Mod FlagFields InputSource -&gt; Parser InputSource
+forall a. a -&gt; Mod FlagFields a -&gt; Parser a
+</span><a href="../file:///nix/store/hnpd4ywnysk8lpfd5q7698b3wmrg1xjm-optparse-applicative-0.16.1.0-doc/share/doc/optparse-applicative-0.16.1.0/html/src"><span class="hs-identifier hs-var">flag'</span></a></span><span> </span><span class="annot"><span class="annottext">InputSource
+</span><a href="Advent.Of.Code.CLI.html#Stdin"><span class="hs-identifier hs-var">Stdin</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">String -&gt; Mod FlagFields InputSource
+forall (f :: * -&gt; *) a. HasName f =&gt; String -&gt; Mod f a
+</span><a href="../file:///nix/store/hnpd4ywnysk8lpfd5q7698b3wmrg1xjm-optparse-applicative-0.16.1.0-doc/share/doc/optparse-applicative-0.16.1.0/html/src"><span class="hs-identifier hs-var">long</span></a></span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;stdin&quot;</span></span><span class="hs-special">)</span><span class="hs-special">,</span><span>
+</span><span id="line-102"></span><span>      </span><span class="annot"><span class="annottext">String -&gt; InputSource
+</span><a href="Advent.Of.Code.CLI.html#InputFile"><span class="hs-identifier hs-var">InputFile</span></a></span><span> </span><span class="annot"><span class="annottext">(String -&gt; InputSource) -&gt; Parser String -&gt; Parser InputSource
+forall (f :: * -&gt; *) a b. Functor f =&gt; (a -&gt; b) -&gt; f a -&gt; f b
+</span><a href="../file:///nix/store/s074i6fx3dbsw5dcyizf4mhh5kpsmw3p-ghc-8.10.7-doc/share/doc/ghc/html/libraries/base-4.14.3.0/src"><span class="hs-operator hs-var">&lt;$&gt;</span></a></span><span> </span><span class="annot"><span class="annottext">Mod OptionFields String -&gt; Parser String
+forall s. IsString s =&gt; Mod OptionFields s -&gt; Parser s
+</span><a href="../file:///nix/store/hnpd4ywnysk8lpfd5q7698b3wmrg1xjm-optparse-applicative-0.16.1.0-doc/share/doc/optparse-applicative-0.16.1.0/html/src"><span class="hs-identifier hs-var">strOption</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">String -&gt; Mod OptionFields String
+forall (f :: * -&gt; *) a. HasName f =&gt; String -&gt; Mod f a
+</span><a href="../file:///nix/store/hnpd4ywnysk8lpfd5q7698b3wmrg1xjm-optparse-applicative-0.16.1.0-doc/share/doc/optparse-applicative-0.16.1.0/html/src"><span class="hs-identifier hs-var">long</span></a></span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;file&quot;</span></span><span> </span><span class="annot"><span class="annottext">Mod OptionFields String
+-&gt; Mod OptionFields String -&gt; Mod OptionFields String
+forall a. Semigroup a =&gt; a -&gt; a -&gt; a
+</span><a href="../file:///nix/store/s074i6fx3dbsw5dcyizf4mhh5kpsmw3p-ghc-8.10.7-doc/share/doc/ghc/html/libraries/base-4.14.3.0/src"><span class="hs-operator hs-var">&lt;&gt;</span></a></span><span> </span><span class="annot"><span class="annottext">Char -&gt; Mod OptionFields String
+forall (f :: * -&gt; *) a. HasName f =&gt; Char -&gt; Mod f a
+</span><a href="../file:///nix/store/hnpd4ywnysk8lpfd5q7698b3wmrg1xjm-optparse-applicative-0.16.1.0-doc/share/doc/optparse-applicative-0.16.1.0/html/src"><span class="hs-identifier hs-var">short</span></a></span><span> </span><span class="annot"><span class="annottext">Char
+</span><span class="hs-char">'f'</span></span><span> </span><span class="annot"><span class="annottext">Mod OptionFields String
+-&gt; Mod OptionFields String -&gt; Mod OptionFields String
+forall a. Semigroup a =&gt; a -&gt; a -&gt; a
+</span><a href="../file:///nix/store/s074i6fx3dbsw5dcyizf4mhh5kpsmw3p-ghc-8.10.7-doc/share/doc/ghc/html/libraries/base-4.14.3.0/src"><span class="hs-operator hs-var">&lt;&gt;</span></a></span><span> </span><span class="annot"><span class="annottext">String -&gt; Mod OptionFields String
+forall (f :: * -&gt; *) a. HasMetavar f =&gt; String -&gt; Mod f a
+</span><a href="../file:///nix/store/hnpd4ywnysk8lpfd5q7698b3wmrg1xjm-optparse-applicative-0.16.1.0-doc/share/doc/optparse-applicative-0.16.1.0/html/src"><span class="hs-identifier hs-var">metavar</span></a></span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;PATH&quot;</span></span><span class="hs-special">)</span><span class="hs-special">,</span><span>
+</span><span id="line-103"></span><span>      </span><span class="annot"><span class="annottext">InputSource -&gt; Parser InputSource
+forall (f :: * -&gt; *) a. Applicative f =&gt; a -&gt; f a
+</span><a href="../file:///nix/store/s074i6fx3dbsw5dcyizf4mhh5kpsmw3p-ghc-8.10.7-doc/share/doc/ghc/html/libraries/base-4.14.3.0/src"><span class="hs-identifier hs-var">pure</span></a></span><span> </span><span class="annot"><span class="annottext">InputSource
+</span><a href="Advent.Of.Code.CLI.html#API"><span class="hs-identifier hs-var">API</span></a></span><span>
+</span><span id="line-104"></span><span>    </span><span class="hs-special">]</span><span>
+</span><span id="line-105"></span></pre></body></html>

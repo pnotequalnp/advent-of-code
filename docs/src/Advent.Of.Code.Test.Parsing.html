@@ -1,0 +1,169 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><link rel="stylesheet" type="text/css" href="style.css" /><script type="text/javascript" src="highlight.js"></script></head><body><pre><span class="hs-comment">-- |</span><span>
+</span><span id="line-2"></span><span class="hs-comment">-- Module      : Advent.Of.Code.Test.Parsing</span><span>
+</span><span id="line-3"></span><span class="hs-comment">-- Description : Advent of Code solution test TOML parsing</span><span>
+</span><span id="line-4"></span><span class="hs-comment">-- Copyright   : Kevin Mullins 2021-2022</span><span>
+</span><span id="line-5"></span><span class="hs-comment">-- License     : ISC</span><span>
+</span><span id="line-6"></span><span class="hs-comment">-- Maintainer  : kevin@pnotequalnp.com</span><span>
+</span><span id="line-7"></span><span class="hs-comment">-- Stability   : unstable</span><span>
+</span><span id="line-8"></span><span class="hs-comment">-- Portability : portable</span><span>
+</span><span id="line-9"></span><span class="hs-comment">--</span><span>
+</span><span id="line-10"></span><span class="hs-comment">-- = Advent.Of.Code.Test.Parsing</span><span>
+</span><span id="line-11"></span><span class="hs-comment">-- TOML parsing utilities for Advent of Code solution tests.</span><span>
+</span><span id="line-12"></span><span class="hs-keyword">module</span><span> </span><span class="hs-identifier">Advent.Of.Code.Test.Parsing</span><span>
+</span><span id="line-13"></span><span>  </span><span class="hs-special">(</span><span> </span><span class="annot"><a href="Advent.Of.Code.Test.Parsing.html#generateTests"><span class="hs-identifier">generateTests</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-14"></span><span>    </span><span class="annot"><a href="Advent.Of.Code.Test.Parsing.html#parseTests"><span class="hs-identifier">parseTests</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-15"></span><span>    </span><span class="annot"><a href="../file:///nix/store/h49qkwr8mm18wn9m07bqvg9z1769314r-tomland-1.3.2.0-doc/share/doc/tomland-1.3.2.0/html/src"><span class="hs-identifier">prettyTomlDecodeErrors</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-16"></span><span>  </span><span class="hs-special">)</span><span>
+</span><span id="line-17"></span><span class="hs-keyword">where</span><span>
+</span><span id="line-18"></span><span>
+</span><span id="line-19"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="../file:///nix/store/80rp8figxa05200jqagdpkb31b733isy-advent-of-code-api-0.2.8.1-doc/share/doc/advent-of-code-api-0.2.8.1/html/src"><span class="hs-identifier">Advent</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="../file:///nix/store/80rp8figxa05200jqagdpkb31b733isy-advent-of-code-api-0.2.8.1-doc/share/doc/advent-of-code-api-0.2.8.1/html/src"><span class="hs-identifier">Part</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="annot"><a href="../file:///nix/store/80rp8figxa05200jqagdpkb31b733isy-advent-of-code-api-0.2.8.1-doc/share/doc/advent-of-code-api-0.2.8.1/html/src"><span class="hs-identifier">dayInt</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="../file:///nix/store/80rp8figxa05200jqagdpkb31b733isy-advent-of-code-api-0.2.8.1-doc/share/doc/advent-of-code-api-0.2.8.1/html/src"><span class="hs-identifier">mkDay</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="../file:///nix/store/80rp8figxa05200jqagdpkb31b733isy-advent-of-code-api-0.2.8.1-doc/share/doc/advent-of-code-api-0.2.8.1/html/src"><span class="hs-identifier">partInt</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-20"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="Advent.Of.Code.Test.Types.html"><span class="hs-identifier">Advent.Of.Code.Test.Types</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Advent.Of.Code.Test.Types.html#Tests"><span class="hs-identifier">Tests</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-21"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="../file:///nix/store/s074i6fx3dbsw5dcyizf4mhh5kpsmw3p-ghc-8.10.7-doc/share/doc/ghc/html/libraries/base-4.14.3.0/src"><span class="hs-identifier">Control.Monad</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="../file:///nix/store/s074i6fx3dbsw5dcyizf4mhh5kpsmw3p-ghc-8.10.7-doc/share/doc/ghc/html/libraries/base-4.14.3.0/src"><span class="hs-operator">(&lt;=&lt;)</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-22"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="../file:///nix/store/s074i6fx3dbsw5dcyizf4mhh5kpsmw3p-ghc-8.10.7-doc/share/doc/ghc/html/libraries/text-1.2.4.1/src"><span class="hs-identifier">Data.Text</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="../file:///nix/store/s074i6fx3dbsw5dcyizf4mhh5kpsmw3p-ghc-8.10.7-doc/share/doc/ghc/html/libraries/text-1.2.4.1/src"><span class="hs-identifier">Text</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-23"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="../file:///nix/store/s074i6fx3dbsw5dcyizf4mhh5kpsmw3p-ghc-8.10.7-doc/share/doc/ghc/html/libraries/text-1.2.4.1/src"><span class="hs-identifier">Data.Text</span></a></span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="hs-keyword">as</span><span> </span><span class="annot"><span class="hs-identifier">T</span></span><span>
+</span><span id="line-24"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="../file:///nix/store/s074i6fx3dbsw5dcyizf4mhh5kpsmw3p-ghc-8.10.7-doc/share/doc/ghc/html/libraries/base-4.14.3.0/src"><span class="hs-identifier">Text.Read</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="../file:///nix/store/s074i6fx3dbsw5dcyizf4mhh5kpsmw3p-ghc-8.10.7-doc/share/doc/ghc/html/libraries/base-4.14.3.0/src"><span class="hs-identifier">readMaybe</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-25"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="../file:///nix/store/h49qkwr8mm18wn9m07bqvg9z1769314r-tomland-1.3.2.0-doc/share/doc/tomland-1.3.2.0/html/src"><span class="hs-identifier">Toml</span></a></span><span> </span><span class="hs-keyword">hiding</span><span> </span><span class="hs-special">(</span><span class="annot"><a href="../file:///nix/store/h49qkwr8mm18wn9m07bqvg9z1769314r-tomland-1.3.2.0-doc/share/doc/tomland-1.3.2.0/html/src"><span class="hs-identifier">day</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-26"></span><span>
+</span><span id="line-27"></span><span class="hs-comment">-- | Parse TOML into `Tests`.</span><span>
+</span><span id="line-28"></span><span class="annot"><a href="Advent.Of.Code.Test.Parsing.html#parseTests"><span class="hs-identifier hs-type">parseTests</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="../file:///nix/store/s074i6fx3dbsw5dcyizf4mhh5kpsmw3p-ghc-8.10.7-doc/share/doc/ghc/html/libraries/text-1.2.4.1/src"><span class="hs-identifier hs-type">Text</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="../file:///nix/store/s074i6fx3dbsw5dcyizf4mhh5kpsmw3p-ghc-8.10.7-doc/share/doc/ghc/html/libraries/base-4.14.3.0/src"><span class="hs-identifier hs-type">Either</span></a></span><span> </span><span class="hs-special">[</span><span class="annot"><a href="../file:///nix/store/h49qkwr8mm18wn9m07bqvg9z1769314r-tomland-1.3.2.0-doc/share/doc/tomland-1.3.2.0/html/src"><span class="hs-identifier hs-type">TomlDecodeError</span></a></span><span class="hs-special">]</span><span> </span><span class="annot"><a href="Advent.Of.Code.Test.Types.html#Tests"><span class="hs-identifier hs-type">Tests</span></a></span><span>
+</span><span id="line-29"></span><span id="parseTests"><span class="annot"><span class="annottext">parseTests :: Text -&gt; Either [TomlDecodeError] Tests
+</span><a href="Advent.Of.Code.Test.Parsing.html#parseTests"><span class="hs-identifier hs-var hs-var">parseTests</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">TomlCodec Tests -&gt; Text -&gt; Either [TomlDecodeError] Tests
+forall a. TomlCodec a -&gt; Text -&gt; Either [TomlDecodeError] a
+</span><a href="../file:///nix/store/h49qkwr8mm18wn9m07bqvg9z1769314r-tomland-1.3.2.0-doc/share/doc/tomland-1.3.2.0/html/src"><span class="hs-identifier hs-var">decode</span></a></span><span> </span><span class="annot"><span class="annottext">TomlCodec Tests
+</span><a href="Advent.Of.Code.Test.Parsing.html#testsCodec"><span class="hs-identifier hs-var">testsCodec</span></a></span><span>
+</span><span id="line-30"></span><span>
+</span><span id="line-31"></span><span class="hs-comment">-- | Generate TOML for the given `Tests`.</span><span>
+</span><span id="line-32"></span><span class="annot"><a href="Advent.Of.Code.Test.Parsing.html#generateTests"><span class="hs-identifier hs-type">generateTests</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Advent.Of.Code.Test.Types.html#Tests"><span class="hs-identifier hs-type">Tests</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="../file:///nix/store/s074i6fx3dbsw5dcyizf4mhh5kpsmw3p-ghc-8.10.7-doc/share/doc/ghc/html/libraries/text-1.2.4.1/src"><span class="hs-identifier hs-type">Text</span></a></span><span>
+</span><span id="line-33"></span><span id="generateTests"><span class="annot"><span class="annottext">generateTests :: Tests -&gt; Text
+</span><a href="Advent.Of.Code.Test.Parsing.html#generateTests"><span class="hs-identifier hs-var hs-var">generateTests</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">TomlCodec Tests -&gt; Tests -&gt; Text
+forall a. TomlCodec a -&gt; a -&gt; Text
+</span><a href="../file:///nix/store/h49qkwr8mm18wn9m07bqvg9z1769314r-tomland-1.3.2.0-doc/share/doc/tomland-1.3.2.0/html/src"><span class="hs-identifier hs-var">encode</span></a></span><span> </span><span class="annot"><span class="annottext">TomlCodec Tests
+</span><a href="Advent.Of.Code.Test.Parsing.html#testsCodec"><span class="hs-identifier hs-var">testsCodec</span></a></span><span>
+</span><span id="line-34"></span><span>
+</span><span id="line-35"></span><span class="annot"><a href="Advent.Of.Code.Test.Parsing.html#testsCodec"><span class="hs-identifier hs-type">testsCodec</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="../file:///nix/store/h49qkwr8mm18wn9m07bqvg9z1769314r-tomland-1.3.2.0-doc/share/doc/tomland-1.3.2.0/html/src"><span class="hs-identifier hs-type">TomlCodec</span></a></span><span> </span><span class="annot"><a href="Advent.Of.Code.Test.Types.html#Tests"><span class="hs-identifier hs-type">Tests</span></a></span><span>
+</span><span id="line-36"></span><span id="testsCodec"><span class="annot"><span class="annottext">testsCodec :: TomlCodec Tests
+</span><a href="Advent.Of.Code.Test.Parsing.html#testsCodec"><span class="hs-identifier hs-var hs-var">testsCodec</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">TomlBiMap Key (Day, Part)
+-&gt; (Key -&gt; TomlCodec [Test]) -&gt; Key -&gt; TomlCodec Tests
+forall k v.
+Ord k =&gt;
+TomlBiMap Key k
+-&gt; (Key -&gt; TomlCodec v) -&gt; Key -&gt; TomlCodec (Map k v)
+</span><a href="../file:///nix/store/h49qkwr8mm18wn9m07bqvg9z1769314r-tomland-1.3.2.0-doc/share/doc/tomland-1.3.2.0/html/src"><span class="hs-identifier hs-var">tableMap</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">(Key -&gt; Either TomlBiMapError (Day, Part))
+-&gt; ((Day, Part) -&gt; Either TomlBiMapError Key)
+-&gt; TomlBiMap Key (Day, Part)
+forall e a b. (a -&gt; Either e b) -&gt; (b -&gt; Either e a) -&gt; BiMap e a b
+</span><a href="../file:///nix/store/h49qkwr8mm18wn9m07bqvg9z1769314r-tomland-1.3.2.0-doc/share/doc/tomland-1.3.2.0/html/src"><span class="hs-identifier hs-var">BiMap</span></a></span><span> </span><span class="annot"><span class="annottext">Key -&gt; Either TomlBiMapError (Day, Part)
+</span><a href="#local-6989586621679125183"><span class="hs-identifier hs-var">fromKey</span></a></span><span> </span><span class="annot"><span class="annottext">(Day, Part) -&gt; Either TomlBiMapError Key
+forall a. (Day, Part) -&gt; Either a Key
+</span><a href="#local-6989586621679125182"><span class="hs-identifier hs-var">toKey</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">TomlCodec Test -&gt; Key -&gt; TomlCodec [Test]
+forall a. TomlCodec a -&gt; Key -&gt; TomlCodec [a]
+</span><a href="../file:///nix/store/h49qkwr8mm18wn9m07bqvg9z1769314r-tomland-1.3.2.0-doc/share/doc/tomland-1.3.2.0/html/src"><span class="hs-identifier hs-var">list</span></a></span><span> </span><span class="annot"><span class="annottext">TomlCodec Test
+forall a. (Generic a, GenericCodec (Rep a)) =&gt; TomlCodec a
+</span><a href="../file:///nix/store/h49qkwr8mm18wn9m07bqvg9z1769314r-tomland-1.3.2.0-doc/share/doc/tomland-1.3.2.0/html/src"><span class="hs-identifier hs-var">genericCodec</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">Key
+</span><span class="hs-string">&quot;test&quot;</span></span><span>
+</span><span id="line-37"></span><span>  </span><span class="hs-keyword">where</span><span>
+</span><span id="line-38"></span><span>    </span><span id="local-6989586621679125182"><span class="annot"><span class="annottext">toKey :: (Day, Part) -&gt; Either a Key
+</span><a href="#local-6989586621679125182"><span class="hs-identifier hs-var hs-var">toKey</span></a></span></span><span> </span><span class="hs-special">(</span><span id="local-6989586621679125179"><span class="annot"><span class="annottext">Day
+</span><a href="#local-6989586621679125179"><span class="hs-identifier hs-var">day</span></a></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679125178"><span class="annot"><span class="annottext">Part
+</span><a href="#local-6989586621679125178"><span class="hs-identifier hs-var">part</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-39"></span><span>      </span><span class="annot"><span class="annottext">Key -&gt; Either a Key
+forall a b. b -&gt; Either a b
+</span><a href="../file:///nix/store/s074i6fx3dbsw5dcyizf4mhh5kpsmw3p-ghc-8.10.7-doc/share/doc/ghc/html/libraries/base-4.14.3.0/src"><span class="hs-identifier hs-var">Right</span></a></span><span> </span><span class="annot"><span class="annottext">(Key -&gt; Either a Key) -&gt; Key -&gt; Either a Key
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><a href="../file:///nix/store/s074i6fx3dbsw5dcyizf4mhh5kpsmw3p-ghc-8.10.7-doc/share/doc/ghc/html/libraries/base-4.14.3.0/src"><span class="hs-operator hs-var">$</span></a></span><span> </span><span class="annot"><span class="annottext">Text -&gt; Piece
+</span><a href="../file:///nix/store/h49qkwr8mm18wn9m07bqvg9z1769314r-tomland-1.3.2.0-doc/share/doc/tomland-1.3.2.0/html/src"><span class="hs-identifier hs-var">Piece</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">String -&gt; Text
+</span><a href="../file:///nix/store/s074i6fx3dbsw5dcyizf4mhh5kpsmw3p-ghc-8.10.7-doc/share/doc/ghc/html/libraries/text-1.2.4.1/src"><span class="hs-identifier hs-var">T.pack</span></a></span><span> </span><span class="annot"><span class="annottext">(String -&gt; Text) -&gt; (Integer -&gt; String) -&gt; Integer -&gt; Text
+forall b c a. (b -&gt; c) -&gt; (a -&gt; b) -&gt; a -&gt; c
+</span><a href="../file:///nix/store/s074i6fx3dbsw5dcyizf4mhh5kpsmw3p-ghc-8.10.7-doc/share/doc/ghc/html/libraries/base-4.14.3.0/src"><span class="hs-operator hs-var">.</span></a></span><span> </span><span class="annot"><span class="annottext">Integer -&gt; String
+forall a. Show a =&gt; a -&gt; String
+</span><a href="../file:///nix/store/s074i6fx3dbsw5dcyizf4mhh5kpsmw3p-ghc-8.10.7-doc/share/doc/ghc/html/libraries/base-4.14.3.0/src"><span class="hs-identifier hs-var">show</span></a></span><span> </span><span class="annot"><span class="annottext">(Integer -&gt; Text) -&gt; Integer -&gt; Text
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><a href="../file:///nix/store/s074i6fx3dbsw5dcyizf4mhh5kpsmw3p-ghc-8.10.7-doc/share/doc/ghc/html/libraries/base-4.14.3.0/src"><span class="hs-operator hs-var">$</span></a></span><span> </span><span class="annot"><span class="annottext">Day -&gt; Integer
+</span><a href="../file:///nix/store/80rp8figxa05200jqagdpkb31b733isy-advent-of-code-api-0.2.8.1-doc/share/doc/advent-of-code-api-0.2.8.1/html/src"><span class="hs-identifier hs-var">dayInt</span></a></span><span> </span><span class="annot"><span class="annottext">Day
+</span><a href="#local-6989586621679125179"><span class="hs-identifier hs-var">day</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">Piece -&gt; [Piece] -&gt; Key
+</span><a href="../file:///nix/store/h49qkwr8mm18wn9m07bqvg9z1769314r-tomland-1.3.2.0-doc/share/doc/tomland-1.3.2.0/html/src"><span class="hs-operator hs-var">:||</span></a></span><span> </span><span class="hs-special">[</span><span class="annot"><span class="annottext">Text -&gt; Piece
+</span><a href="../file:///nix/store/h49qkwr8mm18wn9m07bqvg9z1769314r-tomland-1.3.2.0-doc/share/doc/tomland-1.3.2.0/html/src"><span class="hs-identifier hs-var">Piece</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">String -&gt; Text
+</span><a href="../file:///nix/store/s074i6fx3dbsw5dcyizf4mhh5kpsmw3p-ghc-8.10.7-doc/share/doc/ghc/html/libraries/text-1.2.4.1/src"><span class="hs-identifier hs-var">T.pack</span></a></span><span> </span><span class="annot"><span class="annottext">(String -&gt; Text) -&gt; (Int -&gt; String) -&gt; Int -&gt; Text
+forall b c a. (b -&gt; c) -&gt; (a -&gt; b) -&gt; a -&gt; c
+</span><a href="../file:///nix/store/s074i6fx3dbsw5dcyizf4mhh5kpsmw3p-ghc-8.10.7-doc/share/doc/ghc/html/libraries/base-4.14.3.0/src"><span class="hs-operator hs-var">.</span></a></span><span> </span><span class="annot"><span class="annottext">Int -&gt; String
+forall a. Show a =&gt; a -&gt; String
+</span><a href="../file:///nix/store/s074i6fx3dbsw5dcyizf4mhh5kpsmw3p-ghc-8.10.7-doc/share/doc/ghc/html/libraries/base-4.14.3.0/src"><span class="hs-identifier hs-var">show</span></a></span><span> </span><span class="annot"><span class="annottext">(Int -&gt; Text) -&gt; Int -&gt; Text
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><a href="../file:///nix/store/s074i6fx3dbsw5dcyizf4mhh5kpsmw3p-ghc-8.10.7-doc/share/doc/ghc/html/libraries/base-4.14.3.0/src"><span class="hs-operator hs-var">$</span></a></span><span> </span><span class="annot"><span class="annottext">Part -&gt; Int
+</span><a href="../file:///nix/store/80rp8figxa05200jqagdpkb31b733isy-advent-of-code-api-0.2.8.1-doc/share/doc/advent-of-code-api-0.2.8.1/html/src"><span class="hs-identifier hs-var">partInt</span></a></span><span> </span><span class="annot"><span class="annottext">Part
+</span><a href="#local-6989586621679125178"><span class="hs-identifier hs-var">part</span></a></span><span class="hs-special">)</span><span class="hs-special">]</span><span>
+</span><span id="line-40"></span><span>    </span><span id="local-6989586621679125183"><span class="annot"><span class="annottext">fromKey :: Key -&gt; Either TomlBiMapError (Day, Part)
+</span><a href="#local-6989586621679125183"><span class="hs-identifier hs-var hs-var">fromKey</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-41"></span><span>      </span><span class="annot"><span class="annottext">Either TomlBiMapError (Day, Part)
+-&gt; ((Day, Part) -&gt; Either TomlBiMapError (Day, Part))
+-&gt; Maybe (Day, Part)
+-&gt; Either TomlBiMapError (Day, Part)
+forall b a. b -&gt; (a -&gt; b) -&gt; Maybe a -&gt; b
+</span><a href="../file:///nix/store/s074i6fx3dbsw5dcyizf4mhh5kpsmw3p-ghc-8.10.7-doc/share/doc/ghc/html/libraries/base-4.14.3.0/src"><span class="hs-identifier hs-var">maybe</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">TomlBiMapError -&gt; Either TomlBiMapError (Day, Part)
+forall a b. a -&gt; Either a b
+</span><a href="../file:///nix/store/s074i6fx3dbsw5dcyizf4mhh5kpsmw3p-ghc-8.10.7-doc/share/doc/ghc/html/libraries/base-4.14.3.0/src"><span class="hs-identifier hs-var">Left</span></a></span><span> </span><span class="annot"><span class="annottext">(TomlBiMapError -&gt; Either TomlBiMapError (Day, Part))
+-&gt; TomlBiMapError -&gt; Either TomlBiMapError (Day, Part)
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><a href="../file:///nix/store/s074i6fx3dbsw5dcyizf4mhh5kpsmw3p-ghc-8.10.7-doc/share/doc/ghc/html/libraries/base-4.14.3.0/src"><span class="hs-operator hs-var">$</span></a></span><span> </span><span class="annot"><span class="annottext">Text -&gt; TomlBiMapError
+</span><a href="../file:///nix/store/h49qkwr8mm18wn9m07bqvg9z1769314r-tomland-1.3.2.0-doc/share/doc/tomland-1.3.2.0/html/src"><span class="hs-identifier hs-var">ArbitraryError</span></a></span><span> </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;Couldn't parse day&quot;</span></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">(Day, Part) -&gt; Either TomlBiMapError (Day, Part)
+forall a b. b -&gt; Either a b
+</span><a href="../file:///nix/store/s074i6fx3dbsw5dcyizf4mhh5kpsmw3p-ghc-8.10.7-doc/share/doc/ghc/html/libraries/base-4.14.3.0/src"><span class="hs-identifier hs-var">Right</span></a></span><span> </span><span class="annot"><span class="annottext">(Maybe (Day, Part) -&gt; Either TomlBiMapError (Day, Part))
+-&gt; (Key -&gt; Maybe (Day, Part))
+-&gt; Key
+-&gt; Either TomlBiMapError (Day, Part)
+forall b c a. (b -&gt; c) -&gt; (a -&gt; b) -&gt; a -&gt; c
+</span><a href="../file:///nix/store/s074i6fx3dbsw5dcyizf4mhh5kpsmw3p-ghc-8.10.7-doc/share/doc/ghc/html/libraries/base-4.14.3.0/src"><span class="hs-operator hs-var">.</span></a></span><span> </span><span class="hs-glyph">\</span><span class="hs-glyph">case</span><span>
+</span><span id="line-42"></span><span>        </span><span class="annot"><a href="../file:///nix/store/h49qkwr8mm18wn9m07bqvg9z1769314r-tomland-1.3.2.0-doc/share/doc/tomland-1.3.2.0/html/src"><span class="hs-identifier hs-type">Piece</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-special">(</span><span class="annot"><span class="annottext">Integer -&gt; Maybe Day
+</span><a href="../file:///nix/store/80rp8figxa05200jqagdpkb31b733isy-advent-of-code-api-0.2.8.1-doc/share/doc/advent-of-code-api-0.2.8.1/html/src"><span class="hs-identifier hs-var">mkDay</span></a></span><span> </span><span class="annot"><span class="annottext">(Integer -&gt; Maybe Day)
+-&gt; (String -&gt; Maybe Integer) -&gt; String -&gt; Maybe Day
+forall (m :: * -&gt; *) b c a.
+Monad m =&gt;
+(b -&gt; m c) -&gt; (a -&gt; m b) -&gt; a -&gt; m c
+</span><a href="../file:///nix/store/s074i6fx3dbsw5dcyizf4mhh5kpsmw3p-ghc-8.10.7-doc/share/doc/ghc/html/libraries/base-4.14.3.0/src"><span class="hs-operator hs-var">&lt;=&lt;</span></a></span><span> </span><span class="annot"><span class="annottext">String -&gt; Maybe Integer
+forall a. Read a =&gt; String -&gt; Maybe a
+</span><a href="../file:///nix/store/s074i6fx3dbsw5dcyizf4mhh5kpsmw3p-ghc-8.10.7-doc/share/doc/ghc/html/libraries/base-4.14.3.0/src"><span class="hs-identifier hs-var">readMaybe</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">(String -&gt; Maybe Day) -&gt; (Text -&gt; String) -&gt; Text -&gt; Maybe Day
+forall b c a. (b -&gt; c) -&gt; (a -&gt; b) -&gt; a -&gt; c
+</span><a href="../file:///nix/store/s074i6fx3dbsw5dcyizf4mhh5kpsmw3p-ghc-8.10.7-doc/share/doc/ghc/html/libraries/base-4.14.3.0/src"><span class="hs-operator hs-var">.</span></a></span><span> </span><span class="annot"><span class="annottext">Text -&gt; String
+</span><a href="../file:///nix/store/s074i6fx3dbsw5dcyizf4mhh5kpsmw3p-ghc-8.10.7-doc/share/doc/ghc/html/libraries/text-1.2.4.1/src"><span class="hs-identifier hs-var">T.unpack</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="../file:///nix/store/s074i6fx3dbsw5dcyizf4mhh5kpsmw3p-ghc-8.10.7-doc/share/doc/ghc/html/libraries/base-4.14.3.0/src"><span class="hs-identifier hs-type">Just</span></a></span><span> </span><span id="local-6989586621679125169"><span class="annot"><span class="annottext">Day
+</span><a href="#local-6989586621679125169"><span class="hs-identifier hs-var">day</span></a></span></span><span class="hs-special">)</span><span>
+</span><span id="line-43"></span><span>          </span><span class="annot"><a href="../file:///nix/store/h49qkwr8mm18wn9m07bqvg9z1769314r-tomland-1.3.2.0-doc/share/doc/tomland-1.3.2.0/html/src"><span class="hs-operator hs-type">:||</span></a></span><span> </span><span class="hs-special">[</span><span class="annot"><a href="../file:///nix/store/h49qkwr8mm18wn9m07bqvg9z1769314r-tomland-1.3.2.0-doc/share/doc/tomland-1.3.2.0/html/src"><span class="hs-identifier hs-type">Piece</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-special">(</span><span class="annot"><span class="annottext">Int -&gt; Maybe Part
+</span><a href="Advent.Of.Code.Test.Parsing.html#mkPart"><span class="hs-identifier hs-var">mkPart</span></a></span><span> </span><span class="annot"><span class="annottext">(Int -&gt; Maybe Part)
+-&gt; (String -&gt; Maybe Int) -&gt; String -&gt; Maybe Part
+forall (m :: * -&gt; *) b c a.
+Monad m =&gt;
+(b -&gt; m c) -&gt; (a -&gt; m b) -&gt; a -&gt; m c
+</span><a href="../file:///nix/store/s074i6fx3dbsw5dcyizf4mhh5kpsmw3p-ghc-8.10.7-doc/share/doc/ghc/html/libraries/base-4.14.3.0/src"><span class="hs-operator hs-var">&lt;=&lt;</span></a></span><span> </span><span class="annot"><span class="annottext">String -&gt; Maybe Int
+forall a. Read a =&gt; String -&gt; Maybe a
+</span><a href="../file:///nix/store/s074i6fx3dbsw5dcyizf4mhh5kpsmw3p-ghc-8.10.7-doc/share/doc/ghc/html/libraries/base-4.14.3.0/src"><span class="hs-identifier hs-var">readMaybe</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">(String -&gt; Maybe Part) -&gt; (Text -&gt; String) -&gt; Text -&gt; Maybe Part
+forall b c a. (b -&gt; c) -&gt; (a -&gt; b) -&gt; a -&gt; c
+</span><a href="../file:///nix/store/s074i6fx3dbsw5dcyizf4mhh5kpsmw3p-ghc-8.10.7-doc/share/doc/ghc/html/libraries/base-4.14.3.0/src"><span class="hs-operator hs-var">.</span></a></span><span> </span><span class="annot"><span class="annottext">Text -&gt; String
+</span><a href="../file:///nix/store/s074i6fx3dbsw5dcyizf4mhh5kpsmw3p-ghc-8.10.7-doc/share/doc/ghc/html/libraries/text-1.2.4.1/src"><span class="hs-identifier hs-var">T.unpack</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="../file:///nix/store/s074i6fx3dbsw5dcyizf4mhh5kpsmw3p-ghc-8.10.7-doc/share/doc/ghc/html/libraries/base-4.14.3.0/src"><span class="hs-identifier hs-type">Just</span></a></span><span> </span><span id="local-6989586621679125167"><span class="annot"><span class="annottext">Part
+</span><a href="#local-6989586621679125167"><span class="hs-identifier hs-var">part</span></a></span></span><span class="hs-special">)</span><span class="hs-special">]</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">(Day, Part) -&gt; Maybe (Day, Part)
+forall a. a -&gt; Maybe a
+</span><a href="../file:///nix/store/s074i6fx3dbsw5dcyizf4mhh5kpsmw3p-ghc-8.10.7-doc/share/doc/ghc/html/libraries/base-4.14.3.0/src"><span class="hs-identifier hs-var">Just</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Day
+</span><a href="#local-6989586621679125169"><span class="hs-identifier hs-var">day</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Part
+</span><a href="#local-6989586621679125167"><span class="hs-identifier hs-var">part</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-44"></span><span>        </span><span class="annot"><span class="annottext">Key
+</span><span class="hs-identifier">_</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Maybe (Day, Part)
+forall a. Maybe a
+</span><a href="../file:///nix/store/s074i6fx3dbsw5dcyizf4mhh5kpsmw3p-ghc-8.10.7-doc/share/doc/ghc/html/libraries/base-4.14.3.0/src"><span class="hs-identifier hs-var">Nothing</span></a></span><span>
+</span><span id="line-45"></span><span>
+</span><span id="line-46"></span><span class="annot"><a href="Advent.Of.Code.Test.Parsing.html#mkPart"><span class="hs-identifier hs-type">mkPart</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="../file:///nix/store/s074i6fx3dbsw5dcyizf4mhh5kpsmw3p-ghc-8.10.7-doc/share/doc/ghc/html/libraries/ghc-prim-0.6.1/src"><span class="hs-identifier hs-type">Int</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="../file:///nix/store/s074i6fx3dbsw5dcyizf4mhh5kpsmw3p-ghc-8.10.7-doc/share/doc/ghc/html/libraries/base-4.14.3.0/src"><span class="hs-identifier hs-type">Maybe</span></a></span><span> </span><span class="annot"><a href="../file:///nix/store/80rp8figxa05200jqagdpkb31b733isy-advent-of-code-api-0.2.8.1-doc/share/doc/advent-of-code-api-0.2.8.1/html/src"><span class="hs-identifier hs-type">Part</span></a></span><span>
+</span><span id="line-47"></span><span id="mkPart"><span class="annot"><span class="annottext">mkPart :: Int -&gt; Maybe Part
+</span><a href="Advent.Of.Code.Test.Parsing.html#mkPart"><span class="hs-identifier hs-var hs-var">mkPart</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-glyph">\</span><span class="hs-glyph">case</span><span>
+</span><span id="line-48"></span><span>  </span><span class="annot"><span class="annottext">Int
+</span><span class="hs-number">1</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Part -&gt; Maybe Part
+forall a. a -&gt; Maybe a
+</span><a href="../file:///nix/store/s074i6fx3dbsw5dcyizf4mhh5kpsmw3p-ghc-8.10.7-doc/share/doc/ghc/html/libraries/base-4.14.3.0/src"><span class="hs-identifier hs-var">Just</span></a></span><span> </span><span class="annot"><span class="annottext">Part
+</span><a href="../file:///nix/store/80rp8figxa05200jqagdpkb31b733isy-advent-of-code-api-0.2.8.1-doc/share/doc/advent-of-code-api-0.2.8.1/html/src"><span class="hs-identifier hs-var">Part1</span></a></span><span>
+</span><span id="line-49"></span><span>  </span><span class="annot"><span class="annottext">Int
+</span><span class="hs-number">2</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Part -&gt; Maybe Part
+forall a. a -&gt; Maybe a
+</span><a href="../file:///nix/store/s074i6fx3dbsw5dcyizf4mhh5kpsmw3p-ghc-8.10.7-doc/share/doc/ghc/html/libraries/base-4.14.3.0/src"><span class="hs-identifier hs-var">Just</span></a></span><span> </span><span class="annot"><span class="annottext">Part
+</span><a href="../file:///nix/store/80rp8figxa05200jqagdpkb31b733isy-advent-of-code-api-0.2.8.1-doc/share/doc/advent-of-code-api-0.2.8.1/html/src"><span class="hs-identifier hs-var">Part2</span></a></span><span>
+</span><span id="line-50"></span><span>  </span><span class="annot"><span class="annottext">Int
+</span><span class="hs-identifier">_</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Maybe Part
+forall a. Maybe a
+</span><a href="../file:///nix/store/s074i6fx3dbsw5dcyizf4mhh5kpsmw3p-ghc-8.10.7-doc/share/doc/ghc/html/libraries/base-4.14.3.0/src"><span class="hs-identifier hs-var">Nothing</span></a></span><span>
+</span><span id="line-51"></span></pre></body></html>
