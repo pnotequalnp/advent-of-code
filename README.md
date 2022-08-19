@@ -6,38 +6,38 @@ out of the box.
 
 ## Usage
 ```haskell
-import Advent.Of.Code (Day (..), Part (..), runAdvent)
-import Data.Text (Text)
+-- Main.hs
+{-# LANGUAGE TemplateHaskell #-}
 
-main :: IO ()
-main = runAdvent 2021 solve
-  where
-    solve Day1 Part1 = Just day1part1
-    solve Day7 Part2 = Just day7part2
-    solve _ _ = Nothing
-    
-day1part1 :: Text -> Text
-day1part1 input = "This is probably not the correct answer"
-    
-day7part2 :: Text -> Text
-day7part2 input = "This is also probably wrong"
+module Main where
+
+import Advent.Of.Code
+import Day1
+
+adventOfCode 2021 "Kevin Mullins"
 ```
-I recommend putting each day in its own module. Check out 
-[`Advent.Of.Code.Input`](https://pnotequalnp.github.io/advent-of-code/Advent-Of-Code-Input.html)
-for convenience functions for wrangling the inputs into a more manageable form.
+```haskell
+-- Day1.hs
+module Day1 where
+
+import Control.Comonad (extend)
+import Data.List.NonEmpty (NonEmpty (..))
+
+part1 :: NonEmpty Int -> Int
+part1 = sum . extend \case
+  x :| y : _ | y > x -> 1
+  _ -> 0
+```
 
 ## Running
 To see your output for day 3 part 2, run `yourExecutable 3 2`. Run it with no arguments or `-h` for
-more information. Requires your AoC session key to be in the environment variable `AOC_SESSION_KEY`.
-The session key can be read from the AoC site's cookies. For more information:
+more information. Requires your AoC session key to be in the environment variable `AOC_SESSION_KEY`
+for interacting with the official API.  The session key can be read from the AoC site's cookies. For
+more information:
 [Chrome](https://developer.chrome.com/docs/devtools/storage/cookies/),
 [Firefox](https://developer.mozilla.org/en-US/docs/Tools/Storage_Inspector/Cookies).
 
 ## Adding as a Dependency
-### Nix (recommended)
-Add this flake as an input, and apply its default overlay when importing Nixpkgs. Add
-`advent-of-code` to your `build-depends` in your Cabal file.
-
 ### Cabal
 Create a `cabal.project` if you don't have one already, and add this repo as a remote repository.
 For example:
@@ -49,5 +49,5 @@ source-repository-package
     location: https://github.com/pnotequalnp/advent-of-code.git
     tag: <commit_hash>
 ```
-Make sure to specify the hash of the commit you want to use. Add `advent-of-code` to your
-`build-depends` in your Cabal file.
+Make sure to specify the hash of the commit you want to use. Then add `advent-of-code` to your
+`build-depends` in your `.cabal` file.
