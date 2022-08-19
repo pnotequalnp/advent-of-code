@@ -1,164 +1,168 @@
--- |
--- Module      : Advent.Of.Code
--- Description : Advent of Code framework
--- Copyright   : Kevin Mullins 2021-2022
--- License     : ISC
--- Maintainer  : kevin@pnotequalnp.com
--- Stability   : unstable
--- Portability : portable
---
--- = Advent.Of.Code
--- A framework for fetching inputs, submitting solutions, testing examples, and benchmarking
--- solutions for [Advent of Code](https://adventofcode.com/).
-module Advent.Of.Code
-  ( -- * Advent of Code
-    runAdvent,
-    runAdvent',
-    Day (..),
-    Part (..),
-  )
-where
+{-# LANGUAGE TemplateHaskell #-}
 
-import Advent hiding (Day)
-import Advent qualified (Day)
-import Advent.Of.Code.CLI (Action (..), InputSource (..), Opts (..), execParser, parser)
-import Advent.Of.Code.Test (makeTests)
-import Advent.Of.Code.Test.Parsing (parseTests, prettyTomlDecodeErrors)
-import Criterion.Main qualified as Criterion
-import Data.Map ((!))
-import Data.Map qualified as Map
-import Data.Text (Text)
-import Data.Text qualified as T
+module Advent.Of.Code (
+  adventOfCode,
+  adventOfTests,
+  adventOfBenchmarks,
+  runAdventOfCode,
+  Solution,
+  IsSolution (..),
+) where
+
+import Advent (AoC (..), AoCError (..), AoCOpts, Day, Part (..), dayInt, defaultAoCOpts, mkDay_, partInt, runAoC_, showSubmitRes)
+import Advent.Of.Code.Diagnostics (getDiagnostics, makeBenchmarks, makeTests)
+import Advent.Of.Code.Options (Mode (..), Options (..), parser)
+import Advent.Of.Code.Solution (IsSolution (..), Solution)
+import Control.Exception (Exception (..), Handler (..), SomeAsyncException (..), SomeException (..), catch, catches, evaluate, throwIO)
+import Control.Monad (unless)
+import Control.Monad.IO.Class (liftIO)
+import Data.Map qualified as M
 import Data.Text.IO qualified as T
-import Data.Version (Version, showVersion)
-import Paths_advent_of_code (version)
+import Data.Time.Format (defaultTimeLocale, formatTime)
+import Language.Haskell.TH (Dec, Exp (..), Lit (..), Q, lookupValueName)
+import Options.Applicative (execParser)
 import System.Environment (getArgs, getProgName, lookupEnv, withArgs, withProgName)
-import System.Exit (exitFailure)
-import System.IO (hPutStrLn, stderr)
+import System.Exit (die)
+import System.IO.Error (catchIOError)
 import Test.Tasty qualified as Tasty
+import Test.Tasty.Bench qualified as Tasty.Bench
 
--- | The day of a challenge.
-data Day
-  = Day1
-  | Day2
-  | Day3
-  | Day4
-  | Day5
-  | Day6
-  | Day7
-  | Day8
-  | Day9
-  | Day10
-  | Day11
-  | Day12
-  | Day13
-  | Day14
-  | Day15
-  | Day16
-  | Day17
-  | Day18
-  | Day19
-  | Day20
-  | Day21
-  | Day22
-  | Day23
-  | Day24
-  | Day25
-  deriving (Enum)
+data Action
+  = ShowPrompt {day :: Day, part :: Part, opts :: AoCOpts}
+  | ShowInput {day :: Day, opts :: AoCOpts}
+  | RunStdin {solution :: Solution}
+  | RunOfficial {day :: Day, part :: Part, solution :: Solution, opts :: AoCOpts, submit :: Bool}
 
-toDay :: Advent.Day -> Day
-toDay = toEnum . subtract 1 . fromInteger . dayInt
+resultBound :: Int
+resultBound = 2048
 
--- | The primary entry point for the framework. The solutions are expected as a function that takes
--- the day and part and returns a @Maybe (Text -> Text)@. That @Text -> Text@ is used to compute the
--- solution from the input, if it exists.
-runAdvent ::
-  -- | The AoC year
-  Integer ->
-  -- | Solutions
-  (Day -> Part -> Maybe (Text -> Text)) ->
-  IO ()
-runAdvent = runAdvent' Nothing
-
--- | Entry point that specifies the version of your solutions with the @--version@ option. See
--- `runAdvent`.
-runAdvent' ::
-  -- | Version of the solutions
-  Maybe Version ->
-  -- | The AoC year
-  Integer ->
-  -- | Solutions
-  (Day -> Part -> Maybe (Text -> Text)) ->
-  IO ()
-runAdvent' v year ((. toDay) -> solutions) = do
+runAdventOfCode :: Integer -> (Day -> Part -> Maybe Solution) -> IO ()
+runAdventOfCode year solutions = do
+  progName <- getProgName
   (args, extraArgs') <- span (/= "--") <$> getArgs
   let extraArgs = case extraArgs' of
         "--" : xs -> xs
         xs -> xs
+      progName' = unwords (progName : args ++ ["--"])
 
-  token <-
-    lookupEnv "AOC_SESSION_KEY" >>= \case
-      Nothing -> errorAndDie "Session key must be provided in `AOC_SESSION_KEY` environment variable"
-      Just token -> pure token
+  Options {dayChoice, partChoice, mode} <- withArgs args (execParser parser)
 
-  MkOpts {day, part, action, inputSource} <- withArgs args $ execParser parser
+  let getDay = case dayChoice of
+        Nothing -> die "Day required"
+        Just d -> pure d
+      getPart = case partChoice of
+        Nothing -> die "Part required"
+        Just p -> pure p
+      getSolution d p = case solutions d p of
+        Nothing ->
+          die $ concat ["Solution for day ", show (dayInt d), ", part ", show (partInt p), " not implemented"]
+        Just s -> pure s
+      getOpts = do
+        res <- lookupEnv "AOC_SESSION_KEY"
+        case res of
+          Nothing -> die "Session key must be provided in `AOC_SESSION_KEY` environment variable"
+          Just token -> pure (defaultAoCOpts year token)
 
-  let opts = defaultAoCOpts year token
-      fetchDay = maybe (errorAndDie "Day required") pure day
-      fetchPart = maybe (errorAndDie "Part required") pure part
-      fetchSolution = do
-        day' <- fetchDay
-        part' <- fetchPart
-        maybe (errorAndDie "Solution not implemented") pure $ solutions day' part'
-      fetchInput = do
-        day' <- fetchDay
-        case inputSource of
-          API -> runAoC_ opts (AoCInput day')
-          Stdin -> T.getContents
-          InputFile filepath -> T.readFile filepath
-      runSolution = fetchSolution <*> fetchInput
-      withExtraArgs x = do
-        progName <- getProgName
-        let progName' = unwords (progName : args ++ ["--"])
-        withProgName progName' . withArgs extraArgs $ x
+  action <- case mode of
+    Prompt -> ShowPrompt <$> getDay <*> getPart <*> getOpts
+    Input -> ShowInput <$> getDay <*> getOpts
+    Check -> do
+      day <- getDay
+      part <- getPart
+      solution <- getSolution day part
+      pure RunStdin {solution}
+    Run {submit} -> do
+      day <- getDay
+      part <- getPart
+      solution <- getSolution day part
+      opts <- getOpts
+      pure RunOfficial {day, part, solution, opts, submit}
 
-  case action of
-    Submit -> do
-      case inputSource of
-        API -> pure ()
-        _ -> T.hPutStrLn stderr "WARNING: using non-API input to submit"
-      day' <- fetchDay
-      part' <- fetchPart
-      solution <- runSolution
-      (_, result) <- runAoC_ opts . AoCSubmit day' part' . T.unpack $ solution
-      putStrLn $ showSubmitRes result
-    ShowInput -> fetchInput >>= T.putStrLn
-    ShowOutput -> runSolution >>= T.putStrLn
-    ShowPrompt -> do
-      day' <- fetchDay
-      part' <- fetchPart
-      prompt <- runAoC_ opts (AoCPrompt day')
-      T.putStrLn $ prompt ! part'
-    Test filepath -> do
-      testFile <- T.readFile filepath
-      case parseTests testFile of
-        Left errs -> errorAndDie $ "Couldn't parse test file:\n" <> prettyTomlDecodeErrors errs
-        Right tests -> withExtraArgs (Tasty.defaultMain (makeTests solutions tests'))
-          where
-            tests' = case day of
-              Nothing -> tests
-              Just d -> case part of
-                Nothing -> Map.filterWithKey (\(d', _) _ -> d' == d) tests
-                Just p -> Map.filterWithKey (\(d', p') _ -> d' == d && p' == p) tests
-    Benchmark -> do
-      solution <- fetchSolution
-      let bench = Criterion.env fetchInput $ Criterion.bench "solution" . Criterion.nf solution
-      withExtraArgs (Criterion.defaultMain [bench])
-    Version -> hPutStrLn stderr case v of
-      Nothing -> frameworkVersion
-      Just v' -> showVersion v' <> " (" <> frameworkVersion <> ")"
+  withProgName progName' (withArgs extraArgs (runAction action)) `catch` \case
+    AoCClientError _ -> die "Fatal: an error occurred in the HTTP client"
+    AoCThrottleError -> die "Fatal: throttle limit exhausted"
+    AoCReleaseError dt -> die (formatTime defaultTimeLocale formatString dt)
       where
-        frameworkVersion = "Advent of Code Framework " <> showVersion version
+        formatString = "Challenge not yet available (%d days, %H hours, %M minutes, %S seconds remaining)"
 
-errorAndDie :: Text -> IO a
-errorAndDie msg = T.hPutStrLn stderr msg *> exitFailure
+runAction :: Action -> IO ()
+runAction = \case
+  ShowPrompt {day, part, opts} -> do
+    prompts <- runAoC_ opts (AoCPrompt day)
+    case M.lookup part prompts of
+      Nothing -> die "Prompt not unlocked"
+      Just prompt -> T.putStrLn prompt
+  ShowInput {day, opts} -> do
+    input <- runAoC_ opts (AoCInput day)
+    T.putStrLn input
+  RunStdin {solution} -> do
+    input <- T.getContents `catchIOError` \_ -> die "Fatal: failed to read stdin"
+    output <- runSolution input solution
+    putStrLn output
+  RunOfficial {day, part, solution, opts, submit} -> do
+    input <- runAoC_ opts (AoCInput day)
+    output <- runSolution input solution
+    if submit
+      then do
+        (_, res) <- runAoC_ opts (AoCSubmit day part output)
+        putStrLn (showSubmitRes res)
+      else putStrLn output
+  where
+    runSolution input solution = runSolution' input solution `catches` [Handler handleAsync, Handler handleSync]
+    runSolution' input solution = do
+      result <- solution input
+      let (prefix, remainder) = splitAt resultBound result
+      unless (null remainder) do
+        die ("Fatal: result exceeds " <> show resultBound <> " characters")
+      traverse evaluate prefix
+    handleAsync e@(SomeAsyncException _) = throwIO e
+    handleSync (SomeException e) = die ("Fatal: an exception was thrown during evaluation of the result:\n\n" <> displayException e)
+
+adventOfCode :: Int -> Q [Dec]
+adventOfCode year =
+  [d|
+    main :: IO ()
+    main = $run year (curry (`lookup` solutions))
+      where
+        solutions = $getSolutions
+    |]
+  where
+    run = pure (VarE 'runAdventOfCode)
+
+adventOfTests :: FilePath -> Q [Dec]
+adventOfTests fp = do
+  diags <- liftIO (getDiagnostics fp)
+  [d|
+    main :: IO ()
+    main = Tasty.defaultMain (makeTests diags (curry (`lookup` solutions)))
+      where
+        solutions = $getSolutions
+    |]
+
+adventOfBenchmarks :: FilePath -> Q [Dec]
+adventOfBenchmarks fp = do
+  diags <- liftIO (getDiagnostics fp)
+  [d|
+    main :: IO ()
+    main = Tasty.Bench.defaultMain (makeBenchmarks diags (curry (`lookup` solutions)))
+      where
+        solutions = $getSolutions
+    |]
+
+getSolutions :: Q Exp
+getSolutions = do
+  xs <- sequence $ lookupSolution <$> [minBound .. maxBound] <*> [minBound .. maxBound]
+  pure $ ListE (concat xs)
+  where
+    lookupSolution d p =
+      lookupValueName (toName d p) >>= \case
+        Nothing -> pure []
+        Just n -> pure <$> [|($(toKey d p), $(pure solve') $(pure (VarE n)))|]
+    solve' = VarE 'solve
+    toName d p = concat ["Day", show (dayInt d), ".part", show (partInt p)]
+    toKey d p =
+      let d' = dayInt d
+          p' = case p of
+            Part1 -> 'Part1
+            Part2 -> 'Part2
+       in pure $ TupE [Just (AppE (VarE 'mkDay_) (LitE (IntegerL d'))), Just (ConE p')]
